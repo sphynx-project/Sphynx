@@ -48,7 +48,7 @@ void KernelEntry(void)
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 
-	printf("Hello, World!\n");
+	printf("Sphynx 1.0.0-dev\n");
 
 	HaltAndCatchFire();
 }
