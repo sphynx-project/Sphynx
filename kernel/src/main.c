@@ -11,6 +11,8 @@
 #include <core/gdt.h>
 
 #include <core/acpi/acpi.h>
+#include <core/acpi/rsdt.h>
+#include <core/acpi/madt.h>
 
 #include <mm/pmm.h>
 
@@ -18,6 +20,9 @@
 #include <flanterm/backends/fb.h>
 
 #include <dev/tty.h>
+#include <lib/posix/stdio.h>
+
+#include <lib/posix/assert.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -101,7 +106,7 @@ void KernelEntry(void)
 	rsdpResponse = rsdpRequest.response;
 	AcpiInitialize();
 
-	KernelLog("Initialized ACPI with %s", AcpiUseXsdt() ? "XSDT" : "RSDT");
+	printf("Sphynx booted with %d cores\n", g_acpiCpuCount);
 
 	HaltAndCatchFire();
 }

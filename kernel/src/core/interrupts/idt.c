@@ -3,8 +3,8 @@
 // Written by: Kevin Alavik.
 
 #include <core/interrupts/idt.h>
+#include <lib/posix/stdio.h>
 #include <sys/cpu.h>
-#include <dev/tty.h>
 
 idtEntry_t idtEntries[IDT_ENTRY_COUNT];
 idtPointer_t idtPointer;

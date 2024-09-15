@@ -23,26 +23,6 @@ void _putc(char ch)
 	flanterm_write(ftCtx, &ch, sizeof(ch));
 }
 
-int printf(const char *fmt, ...)
-{
-	char buffer[1024];
-	va_list args;
-
-	va_start(args, fmt);
-	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
-	va_end(args);
-
-	if (length < 0 || length >= (int)sizeof(buffer)) {
-		return -1;
-	}
-
-	for (int i = 0; i < length; ++i) {
-		_putc(buffer[i]);
-	}
-
-	return length;
-}
-
 void vprintf(const char *fmt, va_list args)
 {
 	char buffer[1024];

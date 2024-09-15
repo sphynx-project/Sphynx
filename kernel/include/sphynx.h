@@ -5,7 +5,7 @@
 #pragma once
 
 #include <config.h>
-#include <dev/tty.h>
+#include <lib/posix/stdio.h>
 
 #define DIV_ROUND_UP(x, y) (x + (y - 1)) / y
 #define ALIGN_UP(x, y) DIV_ROUND_UP(x, y) * y

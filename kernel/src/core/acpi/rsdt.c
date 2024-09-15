@@ -3,7 +3,10 @@
 // Written by: Kevin Alavik.
 
 #include <core/acpi/rsdt.h>
+#include <core/acpi/madt.h>
+
 #include <lib/posix/string.h>
+#include <lib/posix/assert.h>
 #include <sys/boot.h>
 
 xsdtTable *g_xsdt;
@@ -18,4 +21,9 @@ void RsdtInitialize()
 		xsdp_t *xsdp = (xsdp_t *)rsdpResponse->address;
 		g_xsdt = (xsdtTable *)(uptr)PHYS_TO_VIRT(xsdp->xsdtAddress);
 	}
+
+	madtTable *madt = AcpiFindSdt("APIC");
+	assert(madt != NULL);
+
+	MadtInitialize(madt);
 }

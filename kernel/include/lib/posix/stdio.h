@@ -4,8 +4,4 @@
 
 #pragma once
 
-#define PAGE_SIZE 4096
-
-#define CONFIG_CPU_MAX 256
-
-#define _HCF_ON_ASSERT 1
+int printf(const char *fmt, ...);
