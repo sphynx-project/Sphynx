@@ -2,8 +2,13 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
+#include <sphynx.h>
+
 #include <sys/boot.h>
 #include <sys/cpu.h>
+
+#include <core/interrupts/idt.h>
+#include <core/gdt.h>
 
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
@@ -48,7 +53,10 @@ void KernelEntry(void)
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 
-	printf("Sphynx 1.0.0-dev\n");
+	GdtInitialize();
+	KernelLog("Initialized GDT");
+	IdtInitialize();
+	KernelLog("Initialized IDT");
 
 	HaltAndCatchFire();
 }
