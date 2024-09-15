@@ -1,0 +1,8 @@
+/kernel/external/
+/kernel/bin/
+/kernel/obj/
+/.vscode/
+/limine/
+/ovmf/
+
+*.iso
