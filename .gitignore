@@ -1,4 +1,5 @@
-/kernel/external/
+/kernel/external/flanterm/
+/kernel/external/limine.h
 /kernel/bin/
 /kernel/obj/
 /.vscode/

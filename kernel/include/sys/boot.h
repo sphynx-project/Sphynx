@@ -5,17 +5,21 @@
 #pragma once
 
 #include <limine.h>
+#include <flanterm/flanterm.h>
+#include <flanterm/backends/fb.h>
 
-__attribute__((used,
-			   section(".requests"))) static volatile LIMINE_BASE_REVISION(2);
-__attribute__((
-	used,
-	section(".requests"))) static volatile struct limine_framebuffer_request
-	framebuffer_request = { .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0 };
-__attribute__((
-	used,
-	section(
-		".requests_start_marker"))) static volatile LIMINE_REQUESTS_START_MARKER;
-__attribute__((
-	used,
-	section(".requests_end_marker"))) static volatile LIMINE_REQUESTS_END_MARKER;
+#define LIMINE_REQUEST_SECTION __attribute__((used, section(".requests")))
+#define LIMINE_START_MARKER_SECTION \
+	__attribute__((used, section(".requests_start_marker")))
+#define LIMINE_END_MARKER_SECTION \
+	__attribute__((used, section(".requests_end_marker")))
+#define LIMINE_REQUEST LIMINE_REQUEST_SECTION static volatile struct
+
+#define LIMINE_START \
+	LIMINE_START_MARKER_SECTION static volatile LIMINE_REQUESTS_START_MARKER;
+
+#define LIMINE_END \
+	LIMINE_END_MARKER_SECTION static volatile LIMINE_REQUESTS_END_MARKER;
+
+extern struct flanterm_context *ftCtx;
+extern struct limine_framebuffer *framebuffer;

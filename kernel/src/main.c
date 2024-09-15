@@ -8,9 +8,20 @@
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
 
+#include <dev/tty.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 
+LIMINE_START
+
+LIMINE_REQUEST_SECTION static volatile LIMINE_BASE_REVISION(2);
+LIMINE_REQUEST limine_framebuffer_request
+	framebuffer_request = { .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0 };
+
+LIMINE_END
+
+struct limine_framebuffer *framebuffer;
 struct flanterm_context *ftCtx;
 
 void KernelEntry(void)
@@ -24,8 +35,7 @@ void KernelEntry(void)
 		HaltAndCatchFire();
 	}
 
-	struct limine_framebuffer *framebuffer =
-		framebuffer_request.response->framebuffers[0];
+	framebuffer = framebuffer_request.response->framebuffers[0];
 
 	ftCtx = flanterm_fb_init(
 		NULL, NULL, framebuffer->address, framebuffer->width,
@@ -38,8 +48,7 @@ void KernelEntry(void)
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 
-	const char msg[] = "Hello, World!\n";
-	flanterm_write(ftCtx, msg, sizeof(msg));
+	printf("Hello, World!\n");
 
 	HaltAndCatchFire();
 }
