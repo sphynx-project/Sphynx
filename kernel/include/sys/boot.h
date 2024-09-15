@@ -5,6 +5,8 @@
 #pragma once
 
 #include <limine.h>
+#include <sphynx.h>
+#include <lib/std/types.h>
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
 
@@ -22,4 +24,8 @@
 	LIMINE_END_MARKER_SECTION static volatile LIMINE_REQUESTS_END_MARKER;
 
 extern struct flanterm_context *ftCtx;
+
 extern struct limine_framebuffer *framebuffer;
+extern struct limine_memmap_response *memoryMap;
+extern struct limine_rsdp_response *rsdpResponse;
+extern u64 hhdmOffset;

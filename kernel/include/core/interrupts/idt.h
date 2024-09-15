@@ -54,5 +54,5 @@ typedef struct {
 	u64 ss;
 } __attribute__((packed)) intFrame_t;
 
-void IdtInitialize();   
+void IdtInitialize();
 void IdtLoad(u64);

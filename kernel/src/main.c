@@ -10,6 +10,10 @@
 #include <core/interrupts/idt.h>
 #include <core/gdt.h>
 
+#include <core/acpi/acpi.h>
+
+#include <mm/pmm.h>
+
 #include <flanterm/flanterm.h>
 #include <flanterm/backends/fb.h>
 
@@ -21,13 +25,24 @@
 LIMINE_START
 
 LIMINE_REQUEST_SECTION static volatile LIMINE_BASE_REVISION(2);
+
 LIMINE_REQUEST limine_framebuffer_request
-	framebuffer_request = { .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0 };
+	framebufferRequest = { .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0 };
+LIMINE_REQUEST limine_memmap_request
+	memmapRequest = { .id = LIMINE_MEMMAP_REQUEST, .revision = 0 };
+LIMINE_REQUEST limine_hhdm_request hhdmRequest = { .id = LIMINE_HHDM_REQUEST,
+												   .revision = 0 };
+LIMINE_REQUEST limine_rsdp_request rsdpRequest = { .id = LIMINE_RSDP_REQUEST,
+												   .revision = 0 };
 
 LIMINE_END
 
-struct limine_framebuffer *framebuffer;
 struct flanterm_context *ftCtx;
+
+struct limine_framebuffer *framebuffer;
+struct limine_memmap_response *memoryMap;
+struct limine_rsdp_response *rsdpResponse;
+u64 hhdmOffset;
 
 void KernelEntry(void)
 {
@@ -35,12 +50,12 @@ void KernelEntry(void)
 		HaltAndCatchFire();
 	}
 
-	if (framebuffer_request.response == NULL ||
-		framebuffer_request.response->framebuffer_count < 1) {
+	if (framebufferRequest.response == NULL ||
+		framebufferRequest.response->framebuffer_count < 1) {
 		HaltAndCatchFire();
 	}
 
-	framebuffer = framebuffer_request.response->framebuffers[0];
+	framebuffer = framebufferRequest.response->framebuffers[0];
 
 	ftCtx = flanterm_fb_init(
 		NULL, NULL, framebuffer->address, framebuffer->width,
@@ -54,9 +69,39 @@ void KernelEntry(void)
 	ftCtx->full_refresh(ftCtx);
 
 	GdtInitialize();
-	KernelLog("Initialized GDT");
 	IdtInitialize();
-	KernelLog("Initialized IDT");
+
+	if (memmapRequest.response == NULL) {
+		KernelLog("ERROR: Failed to get memory map!");
+		HaltAndCatchFire();
+	}
+
+	memoryMap = memmapRequest.response;
+
+	if (hhdmRequest.response == NULL) {
+		KernelLog("ERROR: Failed to get HHDM offset!");
+		HaltAndCatchFire();
+	}
+
+	hhdmOffset = hhdmRequest.response->offset;
+	PmmInitialize();
+
+	void *ptr = PmmRequestPages(1);
+	if (ptr == NULL) {
+		KernelLog("ERROR: Failed to allocate a single page for test!");
+		HaltAndCatchFire();
+	}
+	PmmFreePages(ptr, 1);
+
+	if (rsdpRequest.response == NULL) {
+		KernelLog("ERROR: Failed to get RSDP!");
+		HaltAndCatchFire();
+	}
+
+	rsdpResponse = rsdpRequest.response;
+	AcpiInitialize();
+
+	KernelLog("Initialized ACPI with %s", AcpiUseXsdt() ? "XSDT" : "RSDT");
 
 	HaltAndCatchFire();
 }

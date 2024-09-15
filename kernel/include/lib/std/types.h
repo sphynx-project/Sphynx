@@ -25,7 +25,6 @@
 #define false 0
 #endif
 
-
 typedef signed char s8;
 typedef short s16;
 typedef int s32;
@@ -59,3 +58,5 @@ typedef double _Complex f64_complex;
 
 typedef float f32;
 typedef double f64;
+
+typedef __SIZE_TYPE__ usize;
