@@ -120,3 +120,15 @@ void PmmFreePages(void *ptr, usize numPages)
 		BitmapClear(bitmap, i);
 	}
 }
+
+u64 PmmGetFree()
+{
+	u64 freeMemory = 0;
+	for (u64 i = 0; i < bitmapPages; i++) {
+		if (!BitmapGet(bitmap, i)) {
+			freeMemory += PAGE_SIZE;
+		}
+	}
+
+	return freeMemory;
+}

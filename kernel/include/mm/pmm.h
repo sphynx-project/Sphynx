@@ -9,3 +9,4 @@
 void PmmInitialize();
 void *PmmRequestPages(usize numPages);
 void PmmFreePages(void *ptr, usize numPages);
+u64 PmmGetFree();

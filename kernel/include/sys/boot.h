@@ -28,4 +28,5 @@ extern struct flanterm_context *ftCtx;
 extern struct limine_framebuffer *framebuffer;
 extern struct limine_memmap_response *memoryMap;
 extern struct limine_rsdp_response *rsdpResponse;
+extern struct limine_module_response *moduleResponse;
 extern u64 hhdmOffset;
