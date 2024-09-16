@@ -4,7 +4,6 @@
 
 #include <core/interrupts/timers/pit.h>
 #include <core/interrupts/idt.h>
-#include <core/processes/scheduler.h>
 #include <lib/posix/stdio.h>
 
 static u64 uptimeSeconds = 0;
