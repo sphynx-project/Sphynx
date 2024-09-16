@@ -4,4 +4,4 @@
 
 #pragma once
 
-int printf(const char *fmt, ...);
+void printf(const char *fmt, ...);

@@ -2,32 +2,39 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
+// Boot and CPU includes
 #include <sphynx.h>
-
 #include <sys/boot.h>
 #include <sys/cpu.h>
+#include <lib/std/io.h>
 
+// Interrupt includes
+#include <core/interrupts/timers/pit.h>
 #include <core/interrupts/idt.h>
 #include <core/gdt.h>
 
+// Misc core includes
+#include <core/processes/scheduler.h>
+
+// ACPI includes
 #include <core/acpi/acpi.h>
 #include <core/acpi/rsdt.h>
 #include <core/acpi/madt.h>
 
+// Memory includes
 #include <mm/pmm.h>
 
-#include <flanterm/flanterm.h>
+// TTY and GUI includes
 #include <flanterm/backends/fb.h>
-
-#include <dev/tty.h>
+#include <flanterm/flanterm.h>
 #include <lib/posix/stdio.h>
+#include <dev/tty.h>
 
+// Misc includes
 #include <lib/posix/assert.h>
-
-#include <seif.h>
-
 #include <stdbool.h>
 #include <stddef.h>
+#include <seif.h>
 
 LIMINE_START
 
@@ -54,7 +61,8 @@ struct limine_rsdp_response *rsdpResponse;
 struct limine_module_response *moduleResponse;
 u64 hhdmOffset;
 
-void putpixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+void FramebufferPutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g,
+						 uint8_t b)
 {
 	if (x >= framebuffer->width || y >= framebuffer->height) {
 		return;
@@ -69,7 +77,7 @@ void putpixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
 	*pixel_addr = color;
 }
 
-void draw_image(uint8_t *image, u32 x, u32 y)
+void SeifDrawImage(uint8_t *image, u32 x, u32 y)
 {
 	SEIF_Header *header = (SEIF_Header *)image;
 	if (header->magic[0] != 'S' || header->magic[1] != 'E' ||
@@ -123,9 +131,14 @@ void draw_image(uint8_t *image, u32 x, u32 y)
 				continue;
 			}
 
-			putpixel(x + ix, y + iy, r, g, b);
+			FramebufferPutPixel(x + ix, y + iy, r, g, b);
 		}
 	}
+}
+
+void Test()
+{
+	printf("Hello from task with PID %d\n", processes[currentProcessIndex].pid);
 }
 
 void KernelEntry(void)
@@ -196,8 +209,12 @@ void KernelEntry(void)
 
 	uint8_t *image = (uint8_t *)moduleResponse->modules[0]->address;
 	for (int i = 0; i < count; i++) {
-		draw_image(image, 64 * i, (framebuffer->height - 64) - bottom_margin);
+		SeifDrawImage(image, 64 * i,
+					  (framebuffer->height - 64) - bottom_margin);
 	}
+
+	SchedulerInitialize();
+	PitInitialize();
 
 	printf("Sphynx v1.0.0-dev running with %d cores\n", g_acpiCpuCount);
 	u64 mem = PmmGetFree();
@@ -212,6 +229,12 @@ void KernelEntry(void)
 	else
 		printf("%dB", mem);
 	printf(" (%d pages)\n", DIV_ROUND_UP(mem, PAGE_SIZE));
+
+	SchedulerCreateProcess(Test);
+	SchedulerCreateProcess(Test);
+	SchedulerCreateProcess(Test);
+
+	__asm__ volatile("int $0x20");
 
 	HaltAndCatchFire();
 }

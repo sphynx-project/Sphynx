@@ -6,7 +6,7 @@
 #include <dev/tty.h>
 #include <stdarg.h>
 
-int printf(const char *fmt, ...)
+void printf(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

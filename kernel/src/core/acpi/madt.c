@@ -1,4 +1,4 @@
-// This file is part of the Leaf OS
+// This file is part of the Sphynx OS
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 

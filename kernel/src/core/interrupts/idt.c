@@ -3,12 +3,16 @@
 // Written by: Kevin Alavik.
 
 #include <core/interrupts/idt.h>
+#include <core/interrupts/pic.h>
 #include <lib/posix/stdio.h>
 #include <sys/cpu.h>
+#include <sphynx.h>
 
 idtEntry_t idtEntries[IDT_ENTRY_COUNT];
 idtPointer_t idtPointer;
 extern u64 isrTable[];
+
+irqHandler_t irqHandlers[IRQ_COUNT] = { 0 };
 
 static const char *exceptionStrings[32] = { "Division By Zero",
 											"Debug",
@@ -26,7 +30,7 @@ static const char *exceptionStrings[32] = { "Division By Zero",
 											"General Protection Fault",
 											"Page Fault",
 											"Reserved",
-											"x87 FPU Error"
+											"x87 FPU Error",
 											"Alignment Check",
 											"Machine Check",
 											"Simd Exception",
@@ -59,11 +63,28 @@ void IdtInitialize()
 	idtPointer.limit = sizeof(idtEntry_t) * IDT_ENTRY_COUNT - 1;
 	idtPointer.base = (uptr)&idtEntries;
 
-	for (int i = 0; i < IDT_ENTRY_COUNT; ++i) {
+	for (usize i = 0; i < IRQ_COUNT; i++) {
+		irqHandlers[i] = NULL;
+	}
+
+	// Initialize the PICs
+	LegacyPicConfigure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8, true);
+	LegacyPicDisable();
+
+	// Setup IDT entries for exceptions and IRQs
+	for (int i = 0; i < 32; ++i) {
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
 	}
 
+	for (int i = IRQ_BASE; i < IRQ_BASE + IRQ_COUNT; ++i) {
+		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
+	}
+
+	// Load the IDT
 	IdtLoad((u64)&idtPointer);
+
+	// Enable the PICs
+	LegacyPicEnable();
 }
 
 void IdtExcpHandler(intFrame_t frame)
@@ -79,7 +100,6 @@ void IdtExcpHandler(intFrame_t frame)
 			   exceptionStrings[frame.vector]);
 		printf("\033[1mError code:       \033[0m0x%.16llx\n\n", frame.err);
 
-		// Parse the error code for page faults
 		if (frame.vector == 14) {
 			unsigned long long p = frame.err & 1;
 			unsigned long long wr = (frame.err >> 1) & 1;
@@ -101,30 +121,34 @@ void IdtExcpHandler(intFrame_t frame)
 			printf("\n");
 		}
 
-		printf("\033[1m\033[34mRegister dump:\033[0m\n");
-		printf(
-			"  \033[1mrax:\033[0m 0x%.16llx  \033[1mrbx:\033[0m 0x%.16llx  \033[1mrcx:\033[0m 0x%.16llx  \033[1mrdx:\033[0m 0x%.16llx\n",
-			frame.rax, frame.rbx, frame.rcx, frame.rdx);
-		printf(
-			"  \033[1mrsp:\033[0m 0x%.16llx  \033[1mrbp:\033[0m 0x%.16llx  \033[1mrsi:\033[0m 0x%.16llx  \033[1mrdi:\033[0m 0x%.16llx\n",
-			frame.rsp, frame.rbp, frame.rsi, frame.rdi);
-		printf(
-			"  \033[1mr8:\033[0m  0x%.16llx  \033[1mr9:\033[0m  0x%.16llx  \033[1mr10:\033[0m 0x%.16llx  \033[1mr11:\033[0m 0x%.16llx\n",
-			frame.r8, frame.r9, frame.r10, frame.r11);
-		printf(
-			"  \033[1mr12:\033[0m 0x%.16llx  \033[1mr13:\033[0m 0x%.16llx  \033[1mr14:\033[0m 0x%.16llx  \033[1mr15:\033[0m 0x%.16llx\n",
-			frame.r12, frame.r13, frame.r14, frame.r15);
-		printf(
-			"  \033[1mrfl:\033[0m 0x%.16llx  \033[1mrip:\033[0m 0x%.16llx  \033[1mcs:\033[0m  0x%.16llx  \033[1mss:\033[0m  0x%.16llx\n",
-			frame.rflags, frame.rip, frame.cs, frame.ss);
-		printf(
-			"  \033[1mds:\033[0m  0x%.16llx  \033[1mcr2:\033[0m 0x%.16llx  \033[1mcr3:\033[0m 0x%.16llx\n",
-			frame.ds, frame.cr2, frame.cr3);
-
 		HaltAndCatchFire();
-	} else if (frame.vector >= 0x20 && frame.vector <= 0x2f) {
-		// TODO: Handle IRQs
+	} else if (frame.vector >= IRQ_BASE &&
+			   frame.vector < IRQ_BASE + IRQ_COUNT) {
+		int irq = frame.vector - IRQ_BASE;
+
+		if (irqHandlers[irq]) {
+			irqHandlers[irq](&frame);
+		}
+
+		LegacyPicSendEndOfInterrupt(irq);
 	} else if (frame.vector == 0x80) {
-		// TODO: Handle syscalls
 	}
+}
+
+void IdtIrqRegister(int irq, irqHandler_t handler)
+{
+	if (irq < 0 || irq >= IRQ_COUNT) {
+		printf("Invalid IRQ: %d\n", irq);
+		return;
+	}
+	irqHandlers[irq] = handler;
+}
+
+void IdtIrqDeregister(int irq)
+{
+	if (irq < 0 || irq >= IRQ_COUNT) {
+		printf("Invalid IRQ: %d\n", irq);
+		return;
+	}
+	irqHandlers[irq] = 0;
 }

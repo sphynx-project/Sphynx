@@ -17,10 +17,16 @@ typedef long ssize_t;
 #include <nanoprintf.h>
 
 #include <sys/boot.h>
+#include <lib/std/io.h>
 
 void _putc(char ch)
 {
 	flanterm_write(ftCtx, &ch, sizeof(ch));
+}
+
+void _dputc(char ch)
+{
+	SerialIOWriteByte(0xE9, ch);
 }
 
 void vprintf(const char *fmt, va_list args)
@@ -34,5 +40,6 @@ void vprintf(const char *fmt, va_list args)
 
 	for (int i = 0; i < length; ++i) {
 		_putc(buffer[i]);
+		_dputc(buffer[i]);
 	}
 }

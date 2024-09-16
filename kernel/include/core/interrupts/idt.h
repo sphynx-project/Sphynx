@@ -7,6 +7,8 @@
 #include <lib/std/types.h>
 
 #define IDT_ENTRY_COUNT 256
+#define IRQ_BASE 0x20
+#define IRQ_COUNT 16
 
 typedef struct {
 	u16 offsetLow;
@@ -54,5 +56,9 @@ typedef struct {
 	u64 ss;
 } __attribute__((packed)) intFrame_t;
 
+typedef void (*irqHandler_t)(intFrame_t *);
 void IdtInitialize();
 void IdtLoad(u64);
+
+void IdtIrqRegister(int irq, irqHandler_t handler);
+void IdtIrqDeregister(int irq);
