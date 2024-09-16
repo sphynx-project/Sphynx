@@ -49,7 +49,6 @@ void PitSetCount(u16 count)
 void PitInterruptHandler(intFrame_t *frame)
 {
 	(void)frame;
-	SchedulerSwitchTask();
 	PitInt();
 }
 

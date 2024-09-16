@@ -233,8 +233,7 @@ void KernelEntry(void)
 	SchedulerCreateProcess(Test);
 	SchedulerCreateProcess(Test);
 	SchedulerCreateProcess(Test);
-
-	__asm__ volatile("int $0x20");
+	SchedulerRun();
 
 	HaltAndCatchFire();
 }
