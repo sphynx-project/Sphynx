@@ -21,6 +21,9 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 
+// Task includes
+#include <core/scheduler.h>
+
 // TTY and GUI includes
 #include <flanterm/backends/fb.h>
 #include <flanterm/flanterm.h>
@@ -62,6 +65,11 @@ struct limine_rsdp_response *rsdpResponse;
 struct limine_module_response *moduleResponse;
 struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
+
+void TestTask(void)
+{
+	printf("Hello from task!\n");
+}
 
 void KernelEntry(void)
 {
@@ -134,9 +142,13 @@ void KernelEntry(void)
 			"ERROR: Failed to allocate a single page for test (Virtual Memory)!");
 		HaltAndCatchFire();
 	}
-
-	printf("(VMM) Allocated page at 0x%.16llx\n", (u64)a);
 	VmmFree(VmmGetKernelPageMap(), a);
+
+	SchedulerInitialize();
+	SchedulerSpawn(TestTask);
+	SchedulerRegister();
+
+	__asm__ volatile("int $0x20");
 
 	HaltAndCatchFire();
 }

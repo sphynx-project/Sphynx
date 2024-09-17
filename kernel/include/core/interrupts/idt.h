@@ -54,9 +54,9 @@ typedef struct {
 	u64 rflags;
 	u64 rsp;
 	u64 ss;
-} __attribute__((packed)) intFrame_t;
+} __attribute__((packed)) Context_t;
 
-typedef void (*irqHandler_t)(intFrame_t *);
+typedef void (*irqHandler_t)(Context_t *);
 void IdtInitialize();
 void IdtLoad(u64);
 

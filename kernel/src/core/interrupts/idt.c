@@ -87,7 +87,7 @@ void IdtInitialize()
 	LegacyPicEnable();
 }
 
-void IdtExcpHandler(intFrame_t frame)
+void IdtExcpHandler(Context_t frame)
 {
 	if (frame.vector < 0x20) {
 		printf("\n\033[38;2;255;255;255m\033[48;2;255;0;0m");
