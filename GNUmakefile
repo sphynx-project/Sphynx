@@ -31,7 +31,7 @@ run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
 
 .PHONY: ramfs
 ramfs:
-	cd $(RAMFS_DIR); tar -cvf ../ramfs.img 	*
+	cd $(RAMFS_DIR); tar -cvf ../ramfs.img *
 
 ovmf:
 	mkdir -p ovmf
