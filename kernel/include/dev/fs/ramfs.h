@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <stdarg.h>
-#include <lib/std/lock.h>
+#include <lib/std/types.h>
 
-extern Spinlock vprintf_lock;
-
-void vprintf(const char *fmt, va_list args);
+void RamfsInit(void *buffer, usize size);

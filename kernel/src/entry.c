@@ -25,6 +25,10 @@
 // Task includes
 #include <core/scheduler.h>
 
+// File system includes
+#include <dev/vfs.h>
+#include <dev/fs/ramfs.h>
+
 // TTY and GUI includes
 #include <flanterm/backends/fb.h>
 #include <flanterm/flanterm.h>
@@ -33,6 +37,7 @@
 
 // Misc includes
 #include <lib/posix/assert.h>
+#include <lib/std/lock.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <seif.h>
@@ -92,6 +97,7 @@ void KernelEntry(void)
 		NULL, 0, 0, 1, 0, 0, 0);
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
+	LockInit(&vprintf_lock);
 
 	GdtInitialize();
 	IdtInitialize();
@@ -149,6 +155,9 @@ void KernelEntry(void)
 	moduleResponse = moduleRequest.response;
 
 	// TODO: VFS
+	VfsInitialize();
+	RamfsInit((u8 *)moduleResponse->modules[0]->address,
+			  moduleResponse->modules[0]->size);
 
 	SchedulerInitialize();
 	PitInitialize();

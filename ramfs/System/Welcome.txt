@@ -1,0 +1,1 @@
+Welcome to Sphynx OS (Kernel Version: 1.10.4032)

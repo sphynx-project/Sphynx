@@ -3,6 +3,7 @@
 // Written by: Kevin Alavik.
 
 #include <dev/tty.h>
+#include <lib/std/io.h>
 
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
@@ -17,7 +18,8 @@ typedef long ssize_t;
 #include <nanoprintf.h>
 
 #include <sys/boot.h>
-#include <lib/std/io.h>
+
+Spinlock vprintf_lock;
 
 void _putc(char ch)
 {
@@ -34,12 +36,12 @@ void vprintf(const char *fmt, va_list args)
 	char buffer[1024];
 	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
 
-	if (length < 0 || length >= (int)sizeof(buffer)) {
-		return;
-	}
-
-	for (int i = 0; i < length; ++i) {
-		_putc(buffer[i]);
-		_dputc(buffer[i]);
+	if (length >= 0 && length < (int)sizeof(buffer)) {
+		LockAcquire(&vprintf_lock);
+		for (int i = 0; i < length; ++i) {
+			_putc(buffer[i]);
+			_dputc(buffer[i]);
+		}
+		LockRelease(&vprintf_lock);
 	}
 }

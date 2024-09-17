@@ -7,8 +7,7 @@
 
 #include <lib/posix/stdio.h>
 #include <core/scheduler.h>
-#include <mm/pmm.h>
-#include <core/acpi/madt.h>
+#include <dev/vfs.h>
 
 void Idle()
 {
@@ -18,17 +17,12 @@ void Idle()
 
 void Init()
 {
-	printf("Sphynx v1.0.0-dev running with %d cores\n", g_acpiCpuCount);
-	u64 mem = PmmGetFree();
-
-	printf("Free Memory: ");
-	if (mem >= 1024 * 1024 * 1024)
-		printf("%dGB", DIV_ROUND_UP(mem, (1024 * 1024 * 1024)));
-	else if (mem >= 1024 * 1024)
-		printf("%dMB", DIV_ROUND_UP(mem, (1024 * 1024)));
-	else if (mem >= 1024)
-		printf("%.2fKB", DIV_ROUND_UP(mem, 1024));
-	else
-		printf("%dB", mem);
-	printf(" (%d pages)\n", DIV_ROUND_UP(mem, PAGE_SIZE));
+	const char *path = "A:\\System\\Welcome.txt";
+	char buffer[64] = { 0 };
+	u64 bytesRead = VfsRead(path, &buffer);
+	if (bytesRead > 0) {
+		printf("%s\n", buffer);
+	} else {
+		printf("Failed to read \"%s\"!\n", path);
+	}
 }
