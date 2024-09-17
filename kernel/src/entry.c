@@ -68,12 +68,7 @@ struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
 
 extern void Init(void);
-
-void Idle()
-{
-	while (1) {
-	}
-}
+extern void Idle(void);
 
 void KernelEntry(void)
 {
@@ -147,6 +142,7 @@ void KernelEntry(void)
 	VmmFree(VmmGetKernelPageMap(), a);
 
 	SchedulerInitialize();
+	PitInitialize();
 
 	SchedulerSpawn(Init);
 	SchedulerSpawn(Idle);

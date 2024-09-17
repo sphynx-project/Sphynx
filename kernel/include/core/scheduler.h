@@ -22,4 +22,3 @@ typedef struct {
 void SchedulerInitialize();
 void SchedulerTick(Context_t *ctx);
 void SchedulerSpawn(TaskFunction_t function);
-void SchedulerTop();

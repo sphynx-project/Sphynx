@@ -99,15 +99,3 @@ void SchedulerTick(Context_t *ctx)
 
 	currentTaskIndex = (currentTaskIndex + 1) % taskCount;
 }
-
-void SchedulerTop()
-{
-	printf("Task ID\tStatus\n");
-	printf("--------------------\n");
-
-	for (u32 i = 0; i < taskCount; i++) {
-		Task_t *task = taskList[i];
-
-		printf("%lu\t%s\n", task->id, task->hasExited ? "Exited" : "Running");
-	}
-}

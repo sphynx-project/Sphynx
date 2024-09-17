@@ -26,3 +26,9 @@ void Init()
 		printf("%dB", mem);
 	printf(" (%d pages)\n", DIV_ROUND_UP(mem, PAGE_SIZE));
 }
+
+void Idle()
+{
+	while (1) {
+	}
+}
