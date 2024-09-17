@@ -108,7 +108,8 @@ void KernelEntry(void)
 
 	void *ptr = PmmRequestPages(1);
 	if (ptr == NULL) {
-		KernelLog("ERROR: Failed to allocate a single page for test!");
+		KernelLog(
+			"ERROR: Failed to allocate a single page for test (Physical Memory)!");
 		HaltAndCatchFire();
 	}
 	PmmFreePages(ptr, 1);
@@ -127,7 +128,15 @@ void KernelEntry(void)
 	kernelAddressResponse = kernelAddressRequest.response;
 	VmmInitialize();
 
-	printf("Initialized VMM\n");
+	void *a = VmmAlloc(VmmGetKernelPageMap(), 1, 1 | 2);
+	if (a == NULL) {
+		KernelLog(
+			"ERROR: Failed to allocate a single page for test (Virtual Memory)!");
+		HaltAndCatchFire();
+	}
+
+	printf("(VMM) Allocated page at 0x%.16llx\n", (u64)a);
+	VmmFree(VmmGetKernelPageMap(), a);
 
 	HaltAndCatchFire();
 }

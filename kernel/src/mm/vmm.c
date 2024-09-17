@@ -152,3 +152,91 @@ PageMap *VmmGetCurrentPageMap()
 {
 	return vmmCurrentPageMap;
 }
+
+VmaRegion *VmmCreateRegion(PageMap *pageMap, u64 virtualAddr, u64 physicalAddr,
+						   u64 pages, u64 flags)
+{
+	VmaRegion *region = (VmaRegion *)PHYS_TO_VIRT(PmmRequestPages(1));
+	region->virtualAddr = virtualAddr;
+	region->physicalAddr = physicalAddr;
+	region->pages = pages;
+	region->flags = flags;
+	region->refCount = 0;
+	region->next = pageMap->vmaHead;
+	region->prev = pageMap->vmaHead->prev;
+	region->end = virtualAddr + (pages * GetPageSize());
+
+	pageMap->vmaHead->prev->next = region;
+	pageMap->vmaHead->prev = region;
+
+	return region;
+}
+
+VmaRegion *VmmInsertAfterRegion(VmaRegion *prev, u64 virtualAddr,
+								u64 physicalAddr, u64 pages, u64 flags)
+{
+	VmaRegion *region = (VmaRegion *)PHYS_TO_VIRT(PmmRequestPages(1));
+	region->virtualAddr = virtualAddr;
+	region->physicalAddr = physicalAddr;
+	region->pages = pages;
+	region->flags = flags;
+	region->refCount = 0;
+	region->next = prev->next;
+	region->prev = prev;
+	prev->next->prev = region;
+	prev->next = region;
+	return region;
+}
+
+void VmmDeleteRegion(VmaRegion *region)
+{
+	region->prev->next = region->next;
+	region->next->prev = region->prev;
+	PmmFreePages((u64 *)VIRT_TO_PHYS(region), 1);
+}
+
+void *VmmAlloc(PageMap *pageMap, u64 pages, u64 flags)
+{
+	void *page = PmmRequestPages(pages);
+	if (!page)
+		return NULL;
+
+	u64 vAddr = pageMap->vmaHead->prev->end + GetPageSize();
+	VmaRegion *region;
+	int found = 0;
+	for (region = pageMap->vmaHead->next; region != pageMap->vmaHead;
+		 region = region->next) {
+		if (region->next->virtualAddr - region->end >=
+			(pages * GetPageSize())) {
+			vAddr = region->end;
+			found = 1;
+			region =
+				VmmInsertAfterRegion(region, vAddr, (u64)page, pages, flags);
+			break;
+		}
+	}
+
+	if (!found)
+		region = VmmCreateRegion(pageMap, vAddr, (u64)page, pages, flags);
+
+	for (u64 i = 0; i < pages; i++)
+		VmmMap(pageMap, vAddr + (i * GetPageSize()),
+			   (u64)page + (i * GetPageSize()), flags);
+
+	return (void *)vAddr;
+}
+
+void VmmFree(PageMap *pageMap, void *ptr)
+{
+	VmaRegion *region;
+	for (region = pageMap->vmaHead->next; region != pageMap->vmaHead;
+		 region = region->next) {
+		if (ptr >= (void *)region->virtualAddr && ptr < (void *)(region->end)) {
+			u64 pages = (region->end - (u64)ptr) / GetPageSize();
+			for (u64 i = 0; i < pages; i++)
+				VmmMap(pageMap, (u64)ptr + (i * GetPageSize()), 0, 0);
+			VmmDeleteRegion(region);
+			return;
+		}
+	}
+}

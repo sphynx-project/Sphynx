@@ -33,4 +33,4 @@ void VmmMap(PageMap *pageMap, u64 virtualAddress, u64 physicalAddress,
 PageMap *VmmGetKernelPageMap();
 PageMap *VmmGetCurrentPageMap();
 void *VmmAlloc(PageMap *pageMap, u64 pages, u64 flags);
-void VmmFree(PageMap *pageMap, u64 virtualAddress);
+void VmmFree(PageMap *pageMap, void *ptr);
