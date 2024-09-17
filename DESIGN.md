@@ -10,3 +10,16 @@ SphynxOS uses the [limine bootloader](https://limine-bootloader.org/) so check i
 
 ### Kernel initialization
 
+## Style
+
+### Logging
+
+The logging format looks like this:
+```
+[time since startup] LEVEL @ Scope/Name: message
+```
+
+Example:
+```
+[0.000] DEBUG @ Startup/Init: Initialized ACPI using XSDT
+```
