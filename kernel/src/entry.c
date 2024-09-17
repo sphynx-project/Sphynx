@@ -67,18 +67,12 @@ struct limine_module_response *moduleResponse;
 struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
 
-void TestTask1(void *data)
-{
-	(void)data;
-	while (1)
-		printf("A");
-}
+extern void Init(void);
 
-void TestTask2(void *data)
+void Idle()
 {
-	(void)data;
-	while (1)
-		printf("B");
+	while (1) {
+	}
 }
 
 void KernelEntry(void)
@@ -100,11 +94,9 @@ void KernelEntry(void)
 		framebuffer->red_mask_shift, framebuffer->green_mask_size,
 		framebuffer->green_mask_shift, framebuffer->blue_mask_size,
 		framebuffer->blue_mask_shift, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-		NULL, 0, 0, 1, 0, 0, 8);
+		NULL, 0, 0, 1, 0, 0, 0);
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
-
-	printf("Booting Sphynx...\n");
 
 	GdtInitialize();
 	IdtInitialize();
@@ -156,9 +148,15 @@ void KernelEntry(void)
 
 	SchedulerInitialize();
 
-	SchedulerSpawn(TestTask1, NULL);
-	SchedulerSpawn(TestTask2, NULL);
+	SchedulerSpawn(Init);
+	SchedulerSpawn(Idle);
 
-	PitSleep(10);
+	// Kickstart IRQ 0 incase it doesnt do it manually, this might fail
+	PitSleep(1);
+	__asm__ volatile("int $0x20");
+
+	KernelLog(
+		"Something went wrong, scheduler failed to start or the idle task quit\n");
+
 	HaltAndCatchFire();
 }

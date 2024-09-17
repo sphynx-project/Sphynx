@@ -8,17 +8,18 @@
 #include <core/interrupts/idt.h>
 #include <mm/vmm.h>
 
-typedef void (*TaskFunction_t)(void *);
+typedef void (*TaskFunction_t)(void);
 
 typedef struct {
 	u64 id;
 	PageMap *pm;
 	Context_t ctx;
 	bool hasExited;
-	void *data;
 	TaskFunction_t taskFunction;
+	char name[64];
 } __attribute((packed)) Task_t;
 
 void SchedulerInitialize();
 void SchedulerTick(Context_t *ctx);
-void SchedulerSpawn(TaskFunction_t function, void *data);
+void SchedulerSpawn(TaskFunction_t function);
+void SchedulerTop();

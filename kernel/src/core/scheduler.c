@@ -4,6 +4,7 @@
 
 #include <core/scheduler.h>
 #include <lib/posix/string.h>
+#include <lib/posix/stdio.h>
 #include <sys/boot.h>
 #include <mm/pmm.h>
 
@@ -20,24 +21,23 @@ void removeTask()
 	currentTask->hasExited = true;
 }
 
-void taskMain(void *data)
+void taskMain()
 {
 	Task_t *task = currentTask;
-	task->taskFunction(data);
+	task->taskFunction();
 	removeTask();
 	while (1) {
 	}
 }
 
-void TerminatorTask(void *unused)
+void TerminatorTask()
 {
-	(void)unused;
 	while (1) {
 		for (u32 i = 0; i < taskCount; i++) {
 			Task_t *task = taskList[i];
 			if (task->hasExited) {
-				printf("Task %lu exited with status %d\n", task->id,
-					   task->ctx.rax);
+				// printf("Task %lu exited with status %d\n", task->id,
+				// 	   task->ctx.rax);
 				VmmFree(task->pm, (void *)task->ctx.rsp);
 
 				for (u32 j = i; j < taskCount - 1; j++) {
@@ -55,10 +55,10 @@ void SchedulerInitialize()
 {
 	taskCount = 0;
 	currentTaskIndex = 0;
-	SchedulerSpawn(TerminatorTask, NULL);
+	SchedulerSpawn(TerminatorTask);
 }
 
-void SchedulerSpawn(TaskFunction_t function, void *data)
+void SchedulerSpawn(TaskFunction_t function)
 {
 	if (taskCount >= MAX_TASKS) {
 		return;
@@ -72,7 +72,6 @@ void SchedulerSpawn(TaskFunction_t function, void *data)
 	task->ctx.cs = 0x08;
 	task->ctx.ss = 0x10;
 	task->ctx.rflags = 0x202;
-	task->data = data;
 	task->taskFunction = function;
 
 	taskList[taskCount++] = task;
@@ -99,4 +98,16 @@ void SchedulerTick(Context_t *ctx)
 	VmmSwitchPageMap(currentTask->pm);
 
 	currentTaskIndex = (currentTaskIndex + 1) % taskCount;
+}
+
+void SchedulerTop()
+{
+	printf("Task ID\tStatus\n");
+	printf("--------------------\n");
+
+	for (u32 i = 0; i < taskCount; i++) {
+		Task_t *task = taskList[i];
+
+		printf("%lu\t%s\n", task->id, task->hasExited ? "Exited" : "Running");
+	}
 }
