@@ -30,8 +30,8 @@ void SchedulerSpawn(TaskFunction_t function)
 	task->pm = VmmNewPageMap();
 	task->ctx.rip = (u64)function;
 	task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
-	task->ctx.cs = 0x28;
-	task->ctx.ss = 0x30;
+	task->ctx.cs = 0x08;
+	task->ctx.ss = 0x10;
 	task->ctx.rflags = 0x202;
 
 	taskList[taskCount++] = task;

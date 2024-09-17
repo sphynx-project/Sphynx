@@ -146,6 +146,8 @@ void KernelEntry(void)
 
 	SchedulerInitialize();
 	SchedulerSpawn(TestTask);
+	SchedulerSpawn(TestTask);
+	SchedulerSpawn(TestTask);
 	SchedulerRegister();
 
 	__asm__ volatile("int $0x20");
