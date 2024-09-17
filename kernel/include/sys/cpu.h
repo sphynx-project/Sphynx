@@ -11,3 +11,10 @@ static void HaltAndCatchFire(void)
 		asm("hlt");
 	}
 }
+
+static void Halt(void)
+{
+	for (;;) {
+		asm("hlt");
+	}
+}

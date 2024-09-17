@@ -16,28 +16,31 @@ Task_t *taskList[MAX_TASKS];
 u32 taskCount = 0;
 u32 currentTaskIndex = 0;
 
-void removeTask()
+void RemoveTask()
 {
 	currentTask->hasExited = true;
 }
 
-void taskMain()
+void WatchdogMain()
 {
 	Task_t *task = currentTask;
 	task->taskFunction();
-	removeTask();
+	RemoveTask();
 	while (1) {
 	}
 }
 
-void TerminatorTask()
+void WatchdogHandler()
 {
 	while (1) {
+		if (taskCount == 1 && taskList[0] == currentTask) {
+			RemoveTask();
+			return;
+		}
+
 		for (u32 i = 0; i < taskCount; i++) {
 			Task_t *task = taskList[i];
 			if (task->hasExited) {
-				// printf("Task %lu exited with status %d\n", task->id,
-				// 	   task->ctx.rax);
 				VmmFree(task->pm, (void *)task->ctx.rsp);
 
 				for (u32 j = i; j < taskCount - 1; j++) {
@@ -55,7 +58,7 @@ void SchedulerInitialize()
 {
 	taskCount = 0;
 	currentTaskIndex = 0;
-	SchedulerSpawn(TerminatorTask);
+	SchedulerSpawn(WatchdogHandler);
 }
 
 void SchedulerSpawn(TaskFunction_t function)
@@ -67,7 +70,7 @@ void SchedulerSpawn(TaskFunction_t function)
 	Task_t *task = (Task_t *)PHYS_TO_VIRT(PmmRequestPages(1));
 	task->id = taskId++;
 	task->pm = VmmNewPageMap();
-	task->ctx.rip = (u64)taskMain;
+	task->ctx.rip = (u64)WatchdogMain;
 	task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
 	task->ctx.cs = 0x08;
 	task->ctx.ss = 0x10;

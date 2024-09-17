@@ -163,5 +163,5 @@ void KernelEntry(void)
 	KernelLog(
 		"Something went wrong, scheduler failed to start or the idle task quit\n");
 
-	HaltAndCatchFire();
+	Halt();
 }

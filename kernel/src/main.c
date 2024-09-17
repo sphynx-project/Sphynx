@@ -10,6 +10,12 @@
 #include <mm/pmm.h>
 #include <core/acpi/madt.h>
 
+void Idle()
+{
+	while (1) {
+	}
+}
+
 void Init()
 {
 	printf("Sphynx v1.0.0-dev running with %d cores\n", g_acpiCpuCount);
@@ -25,10 +31,4 @@ void Init()
 	else
 		printf("%dB", mem);
 	printf(" (%d pages)\n", DIV_ROUND_UP(mem, PAGE_SIZE));
-}
-
-void Idle()
-{
-	while (1) {
-	}
 }
