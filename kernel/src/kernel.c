@@ -155,7 +155,6 @@ void KernelEntry(void)
 	VmmFree(VmmGetKernelPageMap(), a);
 
 	SchedulerInitialize();
-	PitInitialize();
 
 	SchedulerSpawn(TestTask1, NULL);
 	SchedulerSpawn(TestTask2, NULL);

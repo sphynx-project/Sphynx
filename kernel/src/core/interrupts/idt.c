@@ -69,8 +69,7 @@ void IdtInitialize()
 	}
 
 	LegacyPicConfigure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8, true);
-
-	PitInitialize();
+	LegacyPicDisable();
 
 	for (int i = 0; i < 32; ++i) {
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
@@ -80,7 +79,7 @@ void IdtInitialize()
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
 	}
 
-	LegacyPicDisable();
+	PitInitialize();
 	IdtLoad((u64)&idtPointer);
 	LegacyPicEnable();
 }
@@ -89,7 +88,7 @@ void IdtExcpHandler(Context_t frame)
 {
 	if (frame.vector < 0x20) {
 		printf(
-			"\n\033[38;2;255;255;255m\033[48;2;255;0;0m#######################################\033[0m\n");
+			"\n\033[38;2;255;255;255m\033[48;2;255;0;0m#####################################			##\033[0m\n");
 		printf(
 			"\033[38;2;255;255;255m\033[48;2;255;0;0m###########  KERNEL PANIC  ############\033[0m\n");
 		printf(
