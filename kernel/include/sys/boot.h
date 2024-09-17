@@ -29,4 +29,5 @@ extern struct limine_framebuffer *framebuffer;
 extern struct limine_memmap_response *memoryMap;
 extern struct limine_rsdp_response *rsdpResponse;
 extern struct limine_module_response *moduleResponse;
+extern struct limine_kernel_address_response *kernelAddressResponse;
 extern u64 hhdmOffset;

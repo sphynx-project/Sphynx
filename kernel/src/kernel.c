@@ -9,7 +9,6 @@
 #include <lib/std/io.h>
 
 // Interrupt includes
-#include <core/interrupts/timers/pit.h>
 #include <core/interrupts/idt.h>
 #include <core/gdt.h>
 
@@ -20,6 +19,7 @@
 
 // Memory includes
 #include <mm/pmm.h>
+#include <mm/vmm.h>
 
 // TTY and GUI includes
 #include <flanterm/backends/fb.h>
@@ -47,6 +47,10 @@ LIMINE_REQUEST limine_rsdp_request rsdpRequest = { .id = LIMINE_RSDP_REQUEST,
 												   .revision = 0 };
 LIMINE_REQUEST limine_module_request
 	moduleRequest = { .id = LIMINE_MODULE_REQUEST, .revision = 0 };
+LIMINE_REQUEST limine_kernel_address_request kernelAddressRequest = {
+	.id = LIMINE_KERNEL_ADDRESS_REQUEST,
+	.revision = 0
+};
 
 LIMINE_END
 
@@ -56,6 +60,7 @@ struct limine_framebuffer *framebuffer;
 struct limine_memmap_response *memoryMap;
 struct limine_rsdp_response *rsdpResponse;
 struct limine_module_response *moduleResponse;
+struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
 
 void KernelEntry(void)
@@ -114,7 +119,15 @@ void KernelEntry(void)
 	}
 	rsdpResponse = rsdpRequest.response;
 	AcpiInitialize();
-	PitInitialize();
+
+	if (kernelAddressRequest.response == NULL) {
+		KernelLog("ERROR: Failed to get kernel address!");
+		HaltAndCatchFire();
+	}
+	kernelAddressResponse = kernelAddressRequest.response;
+	VmmInitialize();
+
+	printf("Initialized VMM\n");
 
 	HaltAndCatchFire();
 }
