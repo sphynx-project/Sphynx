@@ -8,7 +8,7 @@
 #include <sys/boot.h>
 #include <mm/pmm.h>
 
-#define MAX_TASKS 1024
+#define MAX_TASKS 4096
 
 u64 taskId = 0;
 Task_t *currentTask;
@@ -101,4 +101,9 @@ void SchedulerTick(Context_t *ctx)
 	VmmSwitchPageMap(currentTask->pm);
 
 	currentTaskIndex = (currentTaskIndex + 1) % taskCount;
+}
+
+Task_t *SchedulerGetCurrentTask()
+{
+	return currentTask;
 }

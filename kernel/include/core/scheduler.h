@@ -16,9 +16,9 @@ typedef struct {
 	Context_t ctx;
 	bool hasExited;
 	TaskFunction_t taskFunction;
-	char name[64];
 } __attribute((packed)) Task_t;
 
 void SchedulerInitialize();
 void SchedulerTick(Context_t *ctx);
 void SchedulerSpawn(TaskFunction_t function);
+Task_t *SchedulerGetCurrentTask();

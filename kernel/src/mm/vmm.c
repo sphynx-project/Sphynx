@@ -204,6 +204,7 @@ void *VmmAlloc(PageMap *pageMap, u64 pages, u64 flags)
 	u64 vAddr = pageMap->vmaHead->prev->end + GetPageSize();
 	VmaRegion *region;
 	int found = 0;
+
 	for (region = pageMap->vmaHead->next; region != pageMap->vmaHead;
 		 region = region->next) {
 		if (region->next->virtualAddr - region->end >=
