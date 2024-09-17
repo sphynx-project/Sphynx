@@ -59,24 +59,24 @@ void VmmInitialize()
 	u64 virtBase = kernelAddressResponse->virtual_base;
 
 	u64 textStart = ALIGN_DOWN((u64)__textStart, GetPageSize());
-	u64 textEnd = ALIGN_DOWN((u64)__textEnd, GetPageSize());
+	u64 textEnd = ALIGN_UP((u64)__textEnd, GetPageSize());
 
 	u64 roDataStart = ALIGN_DOWN((u64)__roDataStart, GetPageSize());
-	u64 roDataEnd = ALIGN_DOWN((u64)__roDataEnd, GetPageSize());
+	u64 roDataEnd = ALIGN_UP((u64)__roDataEnd, GetPageSize());
 
 	u64 dataStart = ALIGN_DOWN((u64)__dataStart, GetPageSize());
-	u64 dataEnd = ALIGN_DOWN((u64)__dataEnd, GetPageSize());
+	u64 dataEnd = ALIGN_UP((u64)__dataEnd, GetPageSize());
 
 	for (u64 text = textStart; text < textEnd; text += GetPageSize())
 		VmmMap(vmmKernelPageMap, text, text - virtBase + physBase, 1);
 
 	for (u64 roData = roDataStart; roData < roDataEnd; roData += GetPageSize())
 		VmmMap(vmmKernelPageMap, roData, roData - virtBase + physBase,
-			   1 | (1 << 63));
+			   1 | ((u64)1 << 63));
 
 	for (u64 data = dataStart; data < dataEnd; data += GetPageSize())
 		VmmMap(vmmKernelPageMap, data, data - virtBase + physBase,
-			   1 | 2 | (1 << 63));
+			   1 | 2 | ((u64)1 << 63));
 
 	for (u64 gb4 = 0; gb4 < 0x100000000; gb4 += GetPageSize()) {
 		VmmMap(vmmKernelPageMap, gb4, gb4, 1 | 2);
@@ -84,6 +84,20 @@ void VmmInitialize()
 	}
 
 	VmmSwitchPageMap(vmmKernelPageMap);
+}
+
+u64 VmmGetFlags(u8 present, u8 writable, u8 user, u8 nx)
+{
+	u64 flags = 0;
+	if (present)
+		flags |= 1;
+	if (writable)
+		flags |= 2;
+	if (user)
+		flags |= 4;
+	if (nx)
+		flags |= ((u64)1 << 63);
+	return flags;
 }
 
 void VmmSwitchPageMap(PageMap *pageMap)
@@ -103,20 +117,6 @@ PageMap *VmmNewPageMap()
 	}
 
 	return pageMap;
-}
-
-u64 VmmGetFlags(u8 present, u8 writable, u8 user, u8 nx)
-{
-	u64 flags = 0;
-	if (present)
-		flags |= 1;
-	if (writable)
-		flags |= 2;
-	if (user)
-		flags |= 4;
-	if (nx)
-		flags |= (1 << 63);
-	return flags;
 }
 
 u64 *VmmGetNextLevel(u64 *level, u64 entry)

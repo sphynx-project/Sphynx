@@ -86,7 +86,7 @@ void KernelEntry(void)
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 
-	printf("Booting Sphynx...");
+	printf("Booting Sphynx...\n");
 
 	GdtInitialize();
 	IdtInitialize();
