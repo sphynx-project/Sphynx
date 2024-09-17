@@ -9,6 +9,7 @@
 #include <lib/std/io.h>
 
 // Interrupt includes
+#include <core/interrupts/timers/pit.h>
 #include <core/interrupts/idt.h>
 #include <core/gdt.h>
 
@@ -66,9 +67,18 @@ struct limine_module_response *moduleResponse;
 struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
 
-void TestTask(void)
+void TestTask1(void *data)
 {
-	printf("Hello from task!\n");
+	(void)data;
+	while (1)
+		printf("A");
+}
+
+void TestTask2(void *data)
+{
+	(void)data;
+	while (1)
+		printf("B");
 }
 
 void KernelEntry(void)
@@ -145,12 +155,11 @@ void KernelEntry(void)
 	VmmFree(VmmGetKernelPageMap(), a);
 
 	SchedulerInitialize();
-	SchedulerSpawn(TestTask);
-	SchedulerSpawn(TestTask);
-	SchedulerSpawn(TestTask);
-	SchedulerRegister();
+	PitInitialize();
 
-	__asm__ volatile("int $0x20");
+	SchedulerSpawn(TestTask1, NULL);
+	SchedulerSpawn(TestTask2, NULL);
 
+	PitSleep(10);
 	HaltAndCatchFire();
 }

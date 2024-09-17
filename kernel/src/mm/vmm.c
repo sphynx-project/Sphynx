@@ -229,6 +229,10 @@ void *VmmAlloc(PageMap *pageMap, u64 pages, u64 flags)
 void VmmFree(PageMap *pageMap, void *ptr)
 {
 	VmaRegion *region;
+	if (pageMap->vmaHead == NULL) {
+		return;
+	}
+
 	for (region = pageMap->vmaHead->next; region != pageMap->vmaHead;
 		 region = region->next) {
 		if (ptr >= (void *)region->virtualAddr && ptr < (void *)(region->end)) {

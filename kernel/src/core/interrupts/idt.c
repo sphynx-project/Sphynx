@@ -4,6 +4,7 @@
 
 #include <core/interrupts/idt.h>
 #include <core/interrupts/pic.h>
+#include <core/interrupts/timers/pit.h>
 #include <lib/posix/stdio.h>
 #include <sys/cpu.h>
 #include <sphynx.h>
@@ -68,7 +69,8 @@ void IdtInitialize()
 	}
 
 	LegacyPicConfigure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8, true);
-	LegacyPicDisable();
+
+	PitInitialize();
 
 	for (int i = 0; i < 32; ++i) {
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
@@ -78,6 +80,7 @@ void IdtInitialize()
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
 	}
 
+	LegacyPicDisable();
 	IdtLoad((u64)&idtPointer);
 	LegacyPicEnable();
 }
