@@ -141,6 +141,15 @@ void KernelEntry(void)
 	}
 	VmmFree(VmmGetKernelPageMap(), a);
 
+	if (moduleRequest.response == NULL) {
+		KernelLog("ERROR: Failed to get boot modules!");
+		HaltAndCatchFire();
+	}
+
+	moduleResponse = moduleRequest.response;
+
+	// TODO: VFS
+
 	SchedulerInitialize();
 	PitInitialize();
 

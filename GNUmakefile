@@ -1,6 +1,7 @@
 override MAKEFLAGS += -rR
 
 override IMAGE_NAME := Sphynx
+override RAMFS_DIR := ramfs
 
 .PHONY: all
 all: $(IMAGE_NAME).iso
@@ -14,8 +15,7 @@ run: $(IMAGE_NAME).iso
 
 .PHONY: run-debug
 run-debug: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -smp 4 -cdrom $(IMAGE_NAME).iso -boot d -debugcon stdio -d int -no-reboot -no-shutdown		
-
+	qemu-system-x86_64 -M q35 -m 2G -smp 4 -cdrom $(IMAGE_NAME).iso -boot d -debugcon stdio -d int -no-reboot -no-shutdown
 
 .PHONY: run-uefi
 run-uefi: ovmf $(IMAGE_NAME).iso
@@ -28,6 +28,10 @@ run-hdd: $(IMAGE_NAME).hdd
 .PHONY: run-hdd-uefi
 run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
 	qemu-system-x86_64 -M q35 -smp 4 -m 2G -bios ovmf/OVMF.fd -hda $(IMAGE_NAME).hdd -debugcon stdio
+
+.PHONY: ramfs
+ramfs:
+	cd $(RAMFS_DIR); tar -cvf ../ramfs.img 	*
 
 ovmf:
 	mkdir -p ovmf
@@ -42,7 +46,7 @@ limine/limine:
 kernel:
 	$(MAKE) -C kernel
 
-$(IMAGE_NAME).iso: limine/limine kernel
+$(IMAGE_NAME).iso: limine/limine kernel ramfs
 	rm -rf iso_root
 	mkdir -p iso_root/boot
 	cp -v kernel/bin/sphynxkrnl.sys iso_root/boot/
@@ -51,6 +55,7 @@ $(IMAGE_NAME).iso: limine/limine kernel
 	mkdir -p iso_root/EFI/BOOT
 	cp -v limine/BOOTX64.EFI iso_root/EFI/BOOT/
 	cp -v limine/BOOTIA32.EFI iso_root/EFI/BOOT/
+	cp -v ramfs.img iso_root/boot/ramfs
 	xorriso -as mkisofs -b boot/limine/limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot boot/limine/limine-uefi-cd.bin \
@@ -59,7 +64,7 @@ $(IMAGE_NAME).iso: limine/limine kernel
 	./limine/limine bios-install $(IMAGE_NAME).iso
 	rm -rf iso_root
 
-$(IMAGE_NAME).hdd: limine/limine kernel
+$(IMAGE_NAME).hdd: limine/limine kernel ramfs
 	rm -f $(IMAGE_NAME).hdd
 	dd if=/dev/zero bs=1M count=0 seek=64 of=$(IMAGE_NAME).hdd
 	sgdisk $(IMAGE_NAME).hdd -n 1:2048 -t 1:ef00
@@ -70,10 +75,11 @@ $(IMAGE_NAME).hdd: limine/limine kernel
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine.cfg limine/limine-bios.sys ::/boot/limine
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine/BOOTX64.EFI ::/EFI/BOOT
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT
+	mcopy -i $(IMAGE_NAME).hdd@@1M ramfs.img ::/boot/ramfs
 
 .PHONY: clean
 clean:
-	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
+	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd ramfs.img
 	$(MAKE) -C kernel clean
 
 .PHONY: distclean

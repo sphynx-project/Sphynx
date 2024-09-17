@@ -5,5 +5,5 @@
 /.vscode/
 /limine/
 /ovmf/
-
+*.img
 *.iso
