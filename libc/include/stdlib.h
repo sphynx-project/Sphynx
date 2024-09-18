@@ -2,11 +2,8 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
-#include <stdio.h>
-#include <stdlib.h>
+#pragma once
 
-void _start(void)
-{
-	printf("Hello, World!\n");
-	exit(0);
-}
+#include <types.h>
+
+void exit(u8 exitCode);

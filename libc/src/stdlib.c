@@ -2,11 +2,10 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <syscall.h>
 
-void _start(void)
+void exit(u8 exitCode)
 {
-	printf("Hello, World!\n");
-	exit(0);
+	sys_exit(exitCode);
 }
