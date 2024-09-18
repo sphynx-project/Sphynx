@@ -5,8 +5,3 @@
 #pragma once
 
 void printf(const char *fmt, ...);
-void dprintf(const char *fmt, ...);
-
-#define mprintf(fmt, ...)       \
-	printf(fmt, ##__VA_ARGS__); \
-	dprintf(fmt, ##__VA_ARGS__);

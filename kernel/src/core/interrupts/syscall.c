@@ -7,6 +7,7 @@
 #include <lib/posix/stdio.h>
 #include <lib/posix/string.h>
 #include <core/scheduler.h>
+#include <core/bus.h>
 #include <sys/boot.h>
 #include <dev/tty.h>
 
@@ -18,23 +19,19 @@
 static SyscallHandler_t syscallHandlers[MAX_SYSCALLS] = { 0 };
 
 // TODO: Move all handlers elsewhere
-u64 SyscallWriteHandler(u64 stream, u64 data, u64 size, u64 unused1,
+u64 SyscallWriteHandler(u64 device, u64 data, u64 size, u64 unused1,
 						u64 unused2)
 {
-	char *buffer = (char *)data;
-
-	if (stream == 1) {
-		for (u64 i = 0; i < size; ++i) {
-			putchar(buffer[i], 1);
-		}
-	} else if (stream == 2) {
-		for (u64 i = 0; i < size; ++i) {
-			putchar(buffer[i], 2);
-		}
-	} else {
-		printf("Invalid stream: %llu\n", stream);
-		return (u64)-1;
+	Device_t *deviceHandle = DeviceGet(device);
+	if (deviceHandle == NULL) {
+		KernelLog("Failed to open handle to device %d", device);
+		return 0;
 	}
+
+	while (deviceHandle->poll() != DEVICE_NOT_READY) {
+	}
+
+	deviceHandle->write((void *)data, size);
 
 	return size;
 }

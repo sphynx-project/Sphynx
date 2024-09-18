@@ -22,6 +22,8 @@ typedef long ssize_t;
 Spinlock vprintf_lock;
 Spinlock vdprintf_lock;
 
+#include <core/bus.h>
+
 void _putc(char ch)
 {
 	flanterm_write(ftCtx, &ch, sizeof(ch));
@@ -32,6 +34,29 @@ void _dputc(char ch)
 	SerialIOWriteByte(0xE9, ch);
 }
 
+u8 TTYPoll()
+{
+	return DEVICE_READY;
+}
+
+u64 TTYRead(void *unused)
+{
+	(void)unused;
+	return 0;
+}
+
+void TTYWrite(void *in, usize len)
+{
+	char *data = (char *)in;
+	for (usize i = 0; i < len; i++)
+		_putc(data[i]);
+}
+
+void TTYInitialize()
+{
+	DeviceRegister(0, TTYPoll, TTYRead, TTYWrite);
+}
+
 void vprintf(const char *fmt, va_list args)
 {
 	char buffer[1024];
@@ -39,37 +64,16 @@ void vprintf(const char *fmt, va_list args)
 
 	if (length >= 0 && length < (int)sizeof(buffer)) {
 		LockAcquire(&vprintf_lock);
-		for (int i = 0; i < length; ++i) {
-			_putc(buffer[i]);
+		Device_t *ttyHandle = DeviceGet(0);
+		if (ttyHandle == NULL) {
+			KernelLog("Failed to open handle to the TTY!\n");
+			return;
 		}
+
+		while (ttyHandle->poll() != DEVICE_NOT_READY) {
+		}
+
+		ttyHandle->write(buffer, length);
 		LockRelease(&vprintf_lock);
-	}
-}
-
-void vdprintf(const char *fmt, va_list args)
-{
-	char buffer[1024];
-	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
-
-	if (length >= 0 && length < (int)sizeof(buffer)) {
-		LockAcquire(&vdprintf_lock);
-		for (int i = 0; i < length; ++i) {
-			_dputc(buffer[i]);
-		}
-		LockRelease(&vdprintf_lock);
-	}
-}
-
-void putchar(char ch, int i)
-{
-	switch (i) {
-	case 1:
-		_putc(ch);
-		break;
-	case 2:
-		_dputc(ch);
-		break;
-	default:
-		break;
 	}
 }

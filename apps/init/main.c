@@ -8,7 +8,7 @@
 
 void puts(const char *str)
 {
-	sys_write(1, str, strlen(str));
+	sys_write(0, str, strlen(str));
 }
 
 void draw_rect(int x, int y, int w, int h, u8 r, u8 g, u8 b)

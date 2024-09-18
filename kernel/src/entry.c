@@ -40,6 +40,7 @@
 // Misc includes
 #include <lib/posix/assert.h>
 #include <lib/std/lock.h>
+#include <core/bus.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <seif.h>
@@ -104,6 +105,8 @@ void KernelEntry(void)
 	ftCtx->full_refresh(ftCtx);
 	LockInit(&vprintf_lock);
 	LockInit(&vdprintf_lock);
+
+	TTYInitialize();
 
 	GdtInitialize();
 	IdtInitialize();
