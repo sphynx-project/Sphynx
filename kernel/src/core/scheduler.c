@@ -156,6 +156,9 @@ void SchedulerSpawnElf(const char *path)
 		SpawnElf(bin, task->pm);
 		task->taskFunction = (TaskFunction_t)((ElfHeader_t *)bin)->e_entry;
 		taskList[taskCount++] = task;
+
+		printf("Loaded ELF task %llu with entry point 0x%.16llx	\n", task->id,
+			   task->taskFunction);
 	} else {
 		printf("ERROR: Failed to read ELF at %s\n", path);
 	}
