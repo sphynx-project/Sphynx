@@ -99,7 +99,7 @@ void KernelEntry(void)
 		framebuffer->red_mask_shift, framebuffer->green_mask_size,
 		framebuffer->green_mask_shift, framebuffer->blue_mask_size,
 		framebuffer->blue_mask_shift, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-		NULL, 0, 0, 1, 0, 0, 0);
+		NULL, 0, 0, 1, 0, 0, 8);
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 	LockInit(&vprintf_lock);

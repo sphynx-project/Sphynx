@@ -2,11 +2,11 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
-unsigned long long syscall(unsigned long long number, unsigned long long arg1,
-						   unsigned long long arg2, unsigned long long arg3,
-						   unsigned long long arg4, unsigned long long arg5)
+#include <syscall.h>
+
+u64 syscall(u64 number, u64 arg1, u64 arg2, u64 arg3, u64 arg4, u64 arg5)
 {
-	unsigned long long result;
+	u64 result;
 
 	__asm__ volatile("movq %1, %%rax;"
 					 "movq %2, %%rdi;"
@@ -24,13 +24,18 @@ unsigned long long syscall(unsigned long long number, unsigned long long arg1,
 	return result;
 }
 
-void sys_write(unsigned long long stream, const char *data,
-			   unsigned long long len)
+void sys_write(u64 stream, const char *data, u64 len)
 {
-	syscall(1, stream, (unsigned long long)data, len, 0, 0);
+	syscall(1, stream, (u64)data, len, 0, 0);
 }
 
-void sys_exit(unsigned long long exitCode)
+void sys_exit(u64 exitCode)
 {
 	syscall(2, exitCode, 0, 0, 0, 0);
+}
+
+void sys_put_pixel(u64 x, u64 y, u64 r, u64 g, u64 b)
+{
+	u64 color = (r << 16) | (g << 8) | b;
+	syscall(3, x, y, color, 0, 0);
 }

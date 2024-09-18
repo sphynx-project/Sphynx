@@ -7,11 +7,13 @@
 #include <lib/posix/stdio.h>
 #include <lib/posix/string.h>
 #include <core/scheduler.h>
+#include <sys/boot.h>
 #include <dev/tty.h>
 
 #define MAX_SYSCALLS 256
 #define SYSCALL_WRITE 1
 #define SYSCALL_EXIT 2
+#define SYSCALL_PUT_PIXEL 3
 
 static SyscallHandler_t syscallHandlers[MAX_SYSCALLS] = { 0 };
 
@@ -45,12 +47,22 @@ u64 SyscallExitHandler(u64 exitCode, u64 unused2, u64 unused3, u64 unused4,
 	return 0;
 }
 
+u64 SyscallPutPixelHandler(u64 x, u64 y, u64 color, u64 unused4, u64 unused5)
+{
+	u32 *pixel_addr = (u32 *)(framebuffer->address + y * framebuffer->pitch +
+							  x * (framebuffer->bpp / 8));
+	*pixel_addr = (u32)color;
+
+	return 0;
+}
+
 // todo end
 
 void SyscallInitialize()
 {
 	SyscallRegisterHandler(SYSCALL_WRITE, SyscallWriteHandler);
 	SyscallRegisterHandler(SYSCALL_EXIT, SyscallExitHandler);
+	SyscallRegisterHandler(SYSCALL_PUT_PIXEL, SyscallPutPixelHandler);
 }
 
 void SyscallRegisterHandler(u64 syscallNumber, SyscallHandler_t handler)
