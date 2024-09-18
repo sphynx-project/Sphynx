@@ -8,5 +8,5 @@
 void _start(void)
 {
 	printf("Hello from another app!\n");
-	exit(0);
+	exit(2);
 }

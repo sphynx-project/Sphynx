@@ -8,5 +8,5 @@
 void _start(void)
 {
 	printf("Hello, World!\n");
-	exit(0);
+	exit(1);
 }

@@ -42,6 +42,7 @@ void TaskExit(Task_t *task, u64 exitCode)
 void WatchdogMain()
 {
 	Task_t *task = currentTask;
+	VmmSwitchPageMap(task->pm);
 	task->taskFunction();
 	while (1) {
 	}
@@ -138,6 +139,12 @@ void SchedulerSpawnElf(const char *path)
 	u64 bytesRead = VfsRead(path, bin);
 	if (bytesRead > 0) {
 		Task_t *task = (Task_t *)PHYS_TO_VIRT(PmmRequestPages(1));
+		if (task == NULL) {
+			printf("ERROR: Failed to allocate memory for task!\n");
+			VmmFree(VmmGetKernelPageMap(), bin);
+			return;
+		}
+
 		task->id = taskId++;
 		task->pm = VmmNewPageMap();
 		task->ctx.rip = (u64)WatchdogMain;
@@ -151,6 +158,7 @@ void SchedulerSpawnElf(const char *path)
 		taskList[taskCount++] = task;
 	} else {
 		printf("ERROR: Failed to read ELF at %s\n", path);
-		VmmFree(VmmGetKernelPageMap(), bin);
 	}
+
+	VmmFree(VmmGetKernelPageMap(), bin);
 }
