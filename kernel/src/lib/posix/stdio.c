@@ -13,3 +13,11 @@ void printf(const char *fmt, ...)
 	vprintf(fmt, args);
 	va_end(args);
 }
+
+void dprintf(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vdprintf(fmt, args);
+	va_end(args);
+}

@@ -5,3 +5,4 @@
 #pragma once
 
 void printf(const char *fmt, ...);
+void dprintf(const char *fmt, ...);

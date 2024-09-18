@@ -40,6 +40,19 @@ void vprintf(const char *fmt, va_list args)
 		LockAcquire(&vprintf_lock);
 		for (int i = 0; i < length; ++i) {
 			_putc(buffer[i]);
+		}
+		LockRelease(&vprintf_lock);
+	}
+}
+
+void vdprintf(const char *fmt, va_list args)
+{
+	char buffer[1024];
+	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
+
+	if (length >= 0 && length < (int)sizeof(buffer)) {
+		LockAcquire(&vprintf_lock);
+		for (int i = 0; i < length; ++i) {
 			_dputc(buffer[i]);
 		}
 		LockRelease(&vprintf_lock);
