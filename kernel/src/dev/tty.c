@@ -20,6 +20,7 @@ typedef long ssize_t;
 #include <sys/boot.h>
 
 Spinlock vprintf_lock;
+Spinlock vdprintf_lock;
 
 void _putc(char ch)
 {
@@ -51,10 +52,10 @@ void vdprintf(const char *fmt, va_list args)
 	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
 
 	if (length >= 0 && length < (int)sizeof(buffer)) {
-		LockAcquire(&vprintf_lock);
+		LockAcquire(&vdprintf_lock);
 		for (int i = 0; i < length; ++i) {
 			_dputc(buffer[i]);
 		}
-		LockRelease(&vprintf_lock);
+		LockRelease(&vdprintf_lock);
 	}
 }

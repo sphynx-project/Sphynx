@@ -98,6 +98,7 @@ void KernelEntry(void)
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
 	LockInit(&vprintf_lock);
+	LockInit(&vdprintf_lock);
 
 	GdtInitialize();
 	IdtInitialize();

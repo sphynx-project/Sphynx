@@ -8,6 +8,7 @@
 #include <lib/std/lock.h>
 
 extern Spinlock vprintf_lock;
+extern Spinlock vdprintf_lock;
 
 void vprintf(const char *fmt, va_list args);
 void vdprintf(const char *fmt, va_list args);
