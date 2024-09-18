@@ -55,4 +55,8 @@ typedef struct {
 #define PT_PHDR 6
 #define PT_TLS 7
 
+#define PF_X 0x1 // Execute
+#define PF_W 0x2 // Write
+#define PF_R 0x4 // Read
+
 void SpawnElf(u8 *data, PageMap *pm);

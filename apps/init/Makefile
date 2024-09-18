@@ -1,10 +1,13 @@
 CC := cc
 LD := ld
+NASM := nasm
 CFLAGS := -ffreestanding -nostdlib -fno-builtin -I../../libc/include
 LDFLAGS := -m elf_x86_64 -nostdlib -z text -z max-page-size=0x1000 -T linker.ld
+ASMFLAGS := -f elf64
 
 SRC := main.c
-OBJ := $(SRC:.c=.o)
+ASM := crt0.asm
+OBJ := $(SRC:.c=.o) $(ASM:.asm=.o)
 
 all: bin/init
 
@@ -17,6 +20,9 @@ bin/init: $(OBJ) ../../libc/lib/libc.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.asm
+	$(NASM) $(ASMFLAGS) $< -o $@
 
 clean:
 	rm -rf $(OBJ) bin

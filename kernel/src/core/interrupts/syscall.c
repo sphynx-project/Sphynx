@@ -30,6 +30,7 @@ u64 SyscallWriteHandler(u64 device, u64 data, u64 size, u64 unused1,
 	}
 
 	while (deviceHandle->poll() != DEVICE_NOT_READY) {
+		printf("Device %d not ready...\n", deviceHandle->id);
 	}
 
 	deviceHandle->write((void *)data, size);

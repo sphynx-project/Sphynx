@@ -3,6 +3,7 @@
 // Written by: Kevin Alavik.
 
 #include <core/bus.h>
+#include <sphynx.h>
 
 #define MAX_DEVICES 256
 

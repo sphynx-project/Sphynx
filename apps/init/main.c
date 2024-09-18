@@ -4,9 +4,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <syscall.h>
 
-void _start(void)
+int main()
 {
 	printf("Hello, World!\n");
-	exit(1);
+	return 0;
 }

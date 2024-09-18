@@ -4,9 +4,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <syscall.h>
 
-void _start(void)
+int main()
 {
 	printf("Hello from another app!\n");
-	exit(2);
+	return 0;
 }

@@ -5,6 +5,7 @@
 #include <dev/vfs.h>
 #include <lib/posix/string.h>
 #include <lib/posix/stdio.h>
+#include <core/bus.h>
 
 static VFS_t vfs;
 
@@ -18,9 +19,27 @@ static void NormalizePath(char *path)
 	}
 }
 
+u8 VfsDevicePoll()
+{
+	return DEVICE_NOT_READY;
+}
+
+u64 VfsDeviceRead(void *out)
+{
+	(void)out;
+	return 0;
+}
+
+void VfsDeviceWrite(void *in, usize len)
+{
+	(void)in;
+	(void)len;
+}
+
 void VfsInitialize()
 {
 	memset(&vfs, 0, sizeof(VFS_t));
+	DeviceRegister(1, VfsDevicePoll, VfsDeviceRead, VfsDeviceWrite);
 }
 
 void VfsMount(DiskRead_t read, DiskWrite_t write, u8 id)

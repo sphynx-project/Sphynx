@@ -16,7 +16,7 @@ typedef struct {
 	Context_t ctx;
 	bool hasExited;
 	TaskFunction_t taskFunction;
-	int exitCode;
+	u64 exitCode;
 } __attribute((packed)) Task_t;
 
 void SchedulerInitialize();

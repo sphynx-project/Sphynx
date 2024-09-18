@@ -4,6 +4,7 @@
 
 #include <core/proc/elf.h>
 #include <lib/posix/stdio.h>
+#include <lib/posix/string.h>
 
 void SpawnElf(u8 *data, PageMap *pm)
 {
@@ -20,11 +21,24 @@ void SpawnElf(u8 *data, PageMap *pm)
 		if (ph->p_type == PT_LOAD) {
 			u64 start = ph->p_vaddr;
 			u64 end = start + ph->p_memsz;
+			u64 fileEnd = start + ph->p_filesz;
 			u64 offset = ph->p_offset;
 
-			for (u64 addr = start; addr < end; addr += 0x1000) {
+			int flags = 1 | 2;
+			if (ph->p_flags & PF_X)
+				flags |= 4;
+			if (!(ph->p_flags & PF_W))
+				flags &= ~2;
+
+			for (u64 addr = start; addr < fileEnd; addr += 0x1000) {
 				u64 pageOffset = addr - start + offset;
-				VmmMap(pm, (u64)addr, (u64)(data + pageOffset), 1 | 2);
+				VmmMap(pm, addr, (u64)(data + pageOffset), flags);
+			}
+
+			if (fileEnd < end) {
+				for (u64 addr = fileEnd; addr < end; addr += 0x1000) {
+					VmmMap(pm, addr, 0, flags);
+				}
 			}
 		}
 	}

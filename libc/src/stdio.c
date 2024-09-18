@@ -17,13 +17,18 @@ typedef long ssize_t;
 #define NANOPRINTF_IMPLEMENTATION
 #include <_internal/nanoprintf.h>
 
+void write(u64 device, u8 *data, u64 size)
+{
+	sys_write(device, (const char *)data, size);
+}
+
 void vprintf(const char *fmt, va_list args)
 {
 	char buffer[1024];
 	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
 
 	if (length >= 0 && length < (int)sizeof(buffer)) {
-		sys_write(0, buffer, length);
+		write(0, buffer, length);
 	}
 }
 
