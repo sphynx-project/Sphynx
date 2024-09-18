@@ -42,7 +42,8 @@ void TaskExit(Task_t *task, u64 exitCode)
 void WatchdogMain()
 {
 	Task_t *task = currentTask;
-	VmmSwitchPageMap(task->pm);
+	dprintf("Launching task %d at 0x%.16llx\n", task->id,
+			(u64)task->taskFunction);
 	task->taskFunction();
 	while (1) {
 	}
@@ -59,8 +60,8 @@ void WatchdogHandler()
 		for (u32 i = 0; i < taskCount; i++) {
 			Task_t *task = taskList[i];
 			if (task->hasExited) {
-				printf("Task %llu exited with code %llu\n", task->id,
-					   task->exitCode);
+				mprintf("Task %llu exited with code %llu\n", task->id,
+						task->exitCode);
 				RemoveTask(i);
 				i--;
 			}
@@ -126,42 +127,45 @@ Task_t *SchedulerGetCurrentTask()
 void SchedulerSpawnElf(const char *path)
 {
 	if (taskCount >= MAX_TASKS) {
-		printf("ERROR: Maximum task limit reached!\n");
+		mprintf("ERROR: Maximum task limit reached!\n");
 		return;
 	}
 
-	u8 *bin = (u8 *)VmmAlloc(VmmGetKernelPageMap(), 1, 1 | 2);
-	if (bin == NULL) {
-		printf("ERROR: Failed to allocate memory for ELF data!\n");
+	u8 *elfData =
+		(u8 *)VmmAlloc(VmmGetKernelPageMap(), 1, VMM_PRESENT | VMM_WRITE);
+	if (elfData == NULL) {
+		mprintf("ERROR: Failed to allocate memory for ELF data!\n");
 		return;
 	}
 
-	u64 bytesRead = VfsRead(path, bin);
-	if (bytesRead > 0) {
-		Task_t *task = (Task_t *)PHYS_TO_VIRT(PmmRequestPages(1));
-		if (task == NULL) {
-			printf("ERROR: Failed to allocate memory for task!\n");
-			VmmFree(VmmGetKernelPageMap(), bin);
-			return;
-		}
-
-		task->id = taskId++;
-		task->pm = VmmNewPageMap();
-		task->ctx.rip = (u64)WatchdogMain;
-		task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
-		task->ctx.cs = 0x08;
-		task->ctx.ss = 0x10;
-		task->ctx.rflags = 0x202;
-
-		SpawnElf(bin, task->pm);
-		task->taskFunction = (TaskFunction_t)((ElfHeader_t *)bin)->e_entry;
-		taskList[taskCount++] = task;
-
-		printf("Loaded ELF task %llu with entry point 0x%.16llx	\n", task->id,
-			   task->taskFunction);
-	} else {
-		printf("ERROR: Failed to read ELF at %s\n", path);
+	u64 bytesRead = VfsRead(path, elfData);
+	if (bytesRead <= 0) {
+		mprintf("ERROR: Failed to read ELF at %s\n", path);
+		VmmFree(VmmGetKernelPageMap(), elfData);
+		return;
 	}
 
-	VmmFree(VmmGetKernelPageMap(), bin);
+	Task_t *task = (Task_t *)PHYS_TO_VIRT(PmmRequestPages(1));
+	if (task == NULL) {
+		mprintf("ERROR: Failed to allocate memory for task!\n");
+		VmmFree(VmmGetKernelPageMap(), elfData);
+		return;
+	}
+
+	task->id = taskId++;
+	task->pm = VmmNewPageMap();
+
+	task->ctx.rip = (u64)WatchdogMain;
+	task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
+	task->ctx.cs = 0x08;
+	task->ctx.ss = 0x10;
+	task->ctx.rflags = 0x202;
+
+	SpawnElf(elfData, task->pm);
+
+	task->taskFunction = (TaskFunction_t)((ElfHeader_t *)elfData)->e_entry;
+
+	taskList[taskCount++] = task;
+
+	VmmFree(VmmGetKernelPageMap(), elfData);
 }

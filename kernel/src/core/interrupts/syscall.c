@@ -30,7 +30,7 @@ u64 SyscallWriteHandler(u64 device, u64 data, u64 size, u64 unused1,
 	}
 
 	while (deviceHandle->poll() != DEVICE_NOT_READY) {
-		printf("Device %d not ready...\n", deviceHandle->id);
+		mprintf("Device %d not ready...\n", deviceHandle->id);
 	}
 
 	deviceHandle->write((void *)data, size);
@@ -66,7 +66,7 @@ void SyscallInitialize()
 void SyscallRegisterHandler(u64 syscallNumber, SyscallHandler_t handler)
 {
 	if (syscallNumber >= MAX_SYSCALLS) {
-		printf("Invalid syscall number: %llu\n", syscallNumber);
+		mprintf("Invalid syscall number: %llu\n", syscallNumber);
 		return;
 	}
 
@@ -78,11 +78,11 @@ u64 SyscallHandle(u64 syscallNumber, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
 {
 	if (syscallNumber >= MAX_SYSCALLS ||
 		syscallHandlers[syscallNumber] == NULL) {
-		printf("Unknown syscall: %llu, Error", syscallNumber);
+		mprintf("Unknown syscall: %llu, Error", syscallNumber);
 		if (syscallHandlers[syscallNumber] == NULL) {
-			printf("(No valid handler specified).\n");
+			mprintf("(No valid handler specified).\n");
 		} else {
-			printf("(Unknown).\n");
+			mprintf("(Unknown).\n");
 		}
 		return (u64)-1;
 	}

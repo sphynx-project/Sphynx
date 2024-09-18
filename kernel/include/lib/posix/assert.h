@@ -12,7 +12,7 @@
 #define assert(x)                                                            \
 	do {                                                                     \
 		if (!(x)) {                                                          \
-			printf("%s:%d: %s: Assertion '%s' failed\n", __FILE__, __LINE__, \
+			mprintf("%s:%d: %s: Assertion '%s' failed\n", __FILE__, __LINE__, \
 				   __func__, #x);                                            \
 			HaltAndCatchFire();                                              \
 		}                                                                    \

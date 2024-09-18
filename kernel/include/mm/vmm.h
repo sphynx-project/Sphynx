@@ -24,6 +24,17 @@ typedef struct PageMap {
 	VmaRegion *vmaHead;
 } __attribute__((packed)) PageMap;
 
+#define VMM_PRESENT 0x01
+#define VMM_WRITE 0x02
+#define VMM_USER 0x04
+#define VMM_WRITE_THROUGH 0x08
+#define VMM_NO_CACHE 0x10
+#define VMM_ACCESSED 0x20
+#define VMM_DIRTY 0x40
+#define VMM_HUGE_PAGE 0x80
+#define VMM_GLOBAL 0x100
+#define VMM_EXECUTE 0x200
+
 void VmmInitialize();
 void VmmSwitchPageMap(PageMap *pageMap);
 PageMap *VmmNewPageMap();

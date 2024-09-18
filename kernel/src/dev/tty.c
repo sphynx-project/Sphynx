@@ -52,9 +52,43 @@ void TTYWrite(void *in, usize len)
 		_putc(data[i]);
 }
 
-void TTYInitialize()
+u8 DTTYPoll()
 {
-	DeviceRegister(0, TTYPoll, TTYRead, TTYWrite);
+	return DEVICE_READY;
+}
+
+u64 DTTYRead(void *unused)
+{
+	(void)unused;
+	return 0;
+}
+
+void DTTYWrite(void *in, usize len)
+{
+	char *data = (char *)in;
+	for (usize i = 0; i < len; i++)
+		_dputc(data[i]);
+}
+
+void vdprintf(const char *fmt, va_list args)
+{
+	char buffer[1024];
+	int length = npf_vsnprintf(buffer, sizeof(buffer), fmt, args);
+
+	if (length >= 0 && length < (int)sizeof(buffer)) {
+		LockAcquire(&vdprintf_lock);
+		DeviceHandle_t *ttyHandle = DeviceGet(1);
+		if (ttyHandle == NULL) {
+			KernelLog("Failed to open handle to the TTY!\n");
+			return;
+		}
+
+		while (ttyHandle->poll() != DEVICE_NOT_READY) {
+		}
+
+		ttyHandle->write(buffer, length);
+		LockRelease(&vdprintf_lock);
+	}
 }
 
 void vprintf(const char *fmt, va_list args)
@@ -76,4 +110,13 @@ void vprintf(const char *fmt, va_list args)
 		ttyHandle->write(buffer, length);
 		LockRelease(&vprintf_lock);
 	}
+}
+
+void TTYInitialize()
+{
+	LockInit(&vprintf_lock);
+	LockInit(&vdprintf_lock);
+
+	DeviceRegister(0, TTYPoll, TTYRead, TTYWrite);
+	DeviceRegister(1, DTTYPoll, DTTYRead, DTTYWrite);
 }

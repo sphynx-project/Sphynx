@@ -103,9 +103,6 @@ void KernelEntry(void)
 		NULL, 0, 0, 1, 0, 0, 8);
 	ftCtx->cursor_enabled = false;
 	ftCtx->full_refresh(ftCtx);
-	LockInit(&vprintf_lock);
-	LockInit(&vdprintf_lock);
-
 	TTYInitialize();
 
 	GdtInitialize();
@@ -170,7 +167,7 @@ void KernelEntry(void)
 
 	SchedulerInitialize();
 	SchedulerSpawnElf("A:\\Applications\\init");
-	SchedulerSpawnElf("A:\\Applications\\test");
+	// SchedulerSpawnElf("A:\\Applications\\test");
 	SchedulerSpawn(Idle);
 
 	PitInitialize();

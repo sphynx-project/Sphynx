@@ -39,7 +39,7 @@ void VfsDeviceWrite(void *in, usize len)
 void VfsInitialize()
 {
 	memset(&vfs, 0, sizeof(VFS_t));
-	DeviceRegister(1, VfsDevicePoll, VfsDeviceRead, VfsDeviceWrite);
+	DeviceRegister(2, VfsDevicePoll, VfsDeviceRead, VfsDeviceWrite);
 }
 
 void VfsMount(DiskRead_t read, DiskWrite_t write, u8 id)

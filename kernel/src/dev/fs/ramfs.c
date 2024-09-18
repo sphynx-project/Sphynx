@@ -81,7 +81,7 @@ static u64 RamfsRead(Disk_t *disk, const char *path, void *dataOut)
 	for (u32 i = 0; i < fileCount; i++) {
 		if (strcmp(ramFiles[i].name, path) == 0) {
 			if (ramFiles[i].isDirectory) {
-				printf("ERROR: \"%s\" is a directory!\n", path);
+				mprintf("ERROR: \"%s\" is a directory!\n", path);
 				return 0;
 			} else {
 				memcpy(dataOut, ramFiles[i].data, ramFiles[i].size);
@@ -90,7 +90,7 @@ static u64 RamfsRead(Disk_t *disk, const char *path, void *dataOut)
 		}
 	}
 
-	printf("ERROR: Didnt find file \"%s\" in ramfs!\n", path);
+	mprintf("ERROR: Didnt find file \"%s\" in ramfs!\n", path);
 
 	return 0;
 }
