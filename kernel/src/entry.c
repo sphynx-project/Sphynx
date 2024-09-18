@@ -163,7 +163,17 @@ void KernelEntry(void)
 	SchedulerInitialize();
 	PitInitialize();
 
-	SchedulerSpawn(Init);
+	// TODO: Handle init ELF and launch it.
+	const char *initProcPath = "A:\\Applications\\test";
+	char buffer[1028] = { 0 };
+	u64 bytesRead = VfsRead(initProcPath, &buffer);
+	if (bytesRead > 0) {
+		dprintf("%s\n", buffer);
+	} else {
+		dprintf("Failed to read \"%s\"!\n", initProcPath);
+	}
+
+	//SchedulerSpawn(Init);
 	SchedulerSpawn(Idle);
 
 	// Kickstart IRQ 0 incase it doesnt do it manually, this might fail

@@ -14,6 +14,10 @@ all-hdd: $(IMAGE_NAME).hdd
 run: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -smp 4 -cdrom $(IMAGE_NAME).iso -boot d -debugcon stdio
 
+.PHONY: run-no-display
+run-no-display: $(IMAGE_NAME).iso
+	qemu-system-x86_64 -M q35 -m 2G -smp 4 -cdrom $(IMAGE_NAME).iso -boot d -debugcon stdio -display none
+
 .PHONY: run-debug
 run-debug: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -smp 4 -cdrom $(IMAGE_NAME).iso -boot d -debugcon stdio -d int -no-reboot -no-shutdown
