@@ -2,6 +2,7 @@ override MAKEFLAGS += -rR
 
 override IMAGE_NAME := Sphynx
 override RAMFS_DIR := ramfs
+override APPS_DIR := apps
 
 .PHONY: all
 all: $(IMAGE_NAME).iso
@@ -31,6 +32,9 @@ run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
 
 .PHONY: ramfs
 ramfs:
+	make -C $(APPS_DIR)
+	mkdir -p $(RAMFS_DIR)/Applications/
+	mv $(APPS_DIR)/bin/** $(RAMFS_DIR)/Applications/
 	cd $(RAMFS_DIR); tar -cvf ../ramfs.img *
 
 ovmf:
@@ -81,8 +85,10 @@ $(IMAGE_NAME).hdd: limine/limine kernel ramfs
 clean:
 	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd ramfs.img
 	$(MAKE) -C kernel clean
+	$(MAKE) -C $(APPS_DIR) clean
 
 .PHONY: distclean
 distclean: clean
 	rm -rf limine ovmf
+	rm -rf $(RAMFS_DIR)/Applications
 	$(MAKE) -C kernel distclean

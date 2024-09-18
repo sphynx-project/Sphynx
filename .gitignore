@@ -2,8 +2,11 @@
 /kernel/external/limine.h
 /kernel/bin/
 /kernel/obj/
+/apps/bin
 /.vscode/
 /limine/
 /ovmf/
+/ramfs/Applications
 *.img
 *.iso
+*.o
