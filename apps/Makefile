@@ -1,4 +1,4 @@
-APPS := init
+APPS := init test
 
 .PHONY: all build $(APPS) clean
 

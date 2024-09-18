@@ -170,6 +170,7 @@ void KernelEntry(void)
 
 	SchedulerInitialize();
 	SchedulerSpawnElf("A:\\Applications\\init");
+	// SchedulerSpawnElf("A:\\Applications\\test");
 	SchedulerSpawn(Idle);
 
 	PitInitialize();
