@@ -23,9 +23,7 @@ void draw_rect(int x, int y, int w, int h, u8 r, u8 g, u8 b)
 void _start(void)
 {
 	puts("SphynxOS booted yippie!\n");
-	puts("now we die >:D\n");
-
 	draw_rect(400, 400, 100, 100, 255, 255, 255);
-
-	sys_exit(69);
+	puts("time to die >:D\n");
+	sys_exit(0);
 }

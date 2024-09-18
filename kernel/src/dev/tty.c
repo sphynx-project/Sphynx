@@ -64,7 +64,7 @@ void vprintf(const char *fmt, va_list args)
 
 	if (length >= 0 && length < (int)sizeof(buffer)) {
 		LockAcquire(&vprintf_lock);
-		Device_t *ttyHandle = DeviceGet(0);
+		DeviceHandle_t *ttyHandle = DeviceGet(0);
 		if (ttyHandle == NULL) {
 			KernelLog("Failed to open handle to the TTY!\n");
 			return;

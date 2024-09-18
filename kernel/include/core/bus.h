@@ -14,9 +14,9 @@ typedef struct {
 	u8 (*poll)(void);
 	u64 (*read)(void *);
 	void (*write)(void *data, usize size);
-} Device_t;
+} DeviceHandle_t;
 
 void DeviceRegister(u32 id, u8 (*poll)(void), u64 (*read)(void *),
 					void (*write)(void *data, usize size));
-Device_t *DeviceGet(u32 id);
+DeviceHandle_t *DeviceGet(u32 id);
 void DeviceDeregister(u32 id);

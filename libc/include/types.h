@@ -8,6 +8,10 @@
 #define __SIZE_TYPE__ long unsigned int
 #endif
 
+#ifdef NULL
+#undef NULL
+#endif
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -60,3 +64,10 @@ typedef float f32;
 typedef double f64;
 
 typedef __SIZE_TYPE__ usize;
+
+typedef struct {
+	u32 id;
+	u8 (*poll)(void);
+	u64 (*read)(void *);
+	void (*write)(void *data, usize size);
+} DeviceHandle_t;

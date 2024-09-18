@@ -10,6 +10,7 @@
 #include <core/bus.h>
 #include <sys/boot.h>
 #include <dev/tty.h>
+#include <sys/cpu.h>
 
 #define MAX_SYSCALLS 256
 #define SYSCALL_WRITE 1
@@ -22,7 +23,7 @@ static SyscallHandler_t syscallHandlers[MAX_SYSCALLS] = { 0 };
 u64 SyscallWriteHandler(u64 device, u64 data, u64 size, u64 unused1,
 						u64 unused2)
 {
-	Device_t *deviceHandle = DeviceGet(device);
+	DeviceHandle_t *deviceHandle = DeviceGet(device);
 	if (deviceHandle == NULL) {
 		KernelLog("Failed to open handle to device %d", device);
 		return 0;
@@ -52,8 +53,7 @@ u64 SyscallPutPixelHandler(u64 x, u64 y, u64 color, u64 unused4, u64 unused5)
 
 	return 0;
 }
-
-// todo end
+// TODO end
 
 void SyscallInitialize()
 {
@@ -79,7 +79,7 @@ u64 SyscallHandle(u64 syscallNumber, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
 		syscallHandlers[syscallNumber] == NULL) {
 		printf("Unknown syscall: %llu, Error", syscallNumber);
 		if (syscallHandlers[syscallNumber] == NULL) {
-			printf("(No vaid handler specified).\n");
+			printf("(No valid handler specified).\n");
 		} else {
 			printf("(Unknown).\n");
 		}

@@ -6,7 +6,7 @@
 
 #define MAX_DEVICES 256
 
-static Device_t devices[MAX_DEVICES] = { { 0 } };
+static DeviceHandle_t devices[MAX_DEVICES] = { { 0 } };
 
 void DeviceRegister(u32 id, u8 (*poll)(void), u64 (*read)(void *),
 					void (*write)(void *data, usize size))
@@ -20,7 +20,7 @@ void DeviceRegister(u32 id, u8 (*poll)(void), u64 (*read)(void *),
 	devices[id].write = write;
 }
 
-Device_t *DeviceGet(u32 id)
+DeviceHandle_t *DeviceGet(u32 id)
 {
 	if (id >= MAX_DEVICES) {
 		return NULL;
