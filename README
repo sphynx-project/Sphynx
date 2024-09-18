@@ -1,0 +1,24 @@
+Sphynx OS
+=========
+Sphynx is a sub-modern operating system (idk if i can call it modern, so sub-modern it is).
+
+Features
+--------
+- PMM, VMM: For memory management.
+- IDT, GDT, PIC: For interrupt handling.
+- Scheduler: For handling tasks / processes.
+- VFS: A virtual file system ABI for handling different file systems.
+- ACPI: Unused.
+- Ramfs: A pure virtual filesystem loaded in kernel init. This is where the initial env for the OS is.
+
+Building
+--------
+To build Sphynx simply run 'make' in the root of the repository. I don't know the dependencies, figure it out yourself.
+
+Running
+-------
+Hardware support is unknown, just run using the 'make run' command in the root of the repository.
+
+License
+-------
+All components of the Sphynx OS is licensed under the MIT license. For external components licenses check kernel/external/*/ for any license files (you might have to compile once to get all the external components downloaded). See LICENSE file for more info.
