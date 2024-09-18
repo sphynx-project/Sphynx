@@ -10,6 +10,7 @@
 
 // Interrupt includes
 #include <core/interrupts/timers/pit.h>
+#include <core/interrupts/syscall.h>
 #include <core/interrupts/idt.h>
 #include <core/gdt.h>
 
@@ -106,6 +107,7 @@ void KernelEntry(void)
 
 	GdtInitialize();
 	IdtInitialize();
+	SyscallInitialize();
 
 	if (memmapRequest.response == NULL) {
 		KernelLog("ERROR: Failed to get memory map!");
@@ -163,12 +165,11 @@ void KernelEntry(void)
 	RamfsInit((u8 *)moduleResponse->modules[0]->address,
 			  moduleResponse->modules[0]->size);
 
-
 	SchedulerInitialize();
-	PitInitialize();
-
-	ElfSpawn("A:\\Aplications\\test");
+	SchedulerSpawnElf("A:\\Applications\\init");
 	SchedulerSpawn(Idle);
+
+	PitInitialize();
 
 	// Kickstart IRQ 0 incase it doesnt do it manually, this might fail
 	PitSleep(1);

@@ -36,7 +36,7 @@ run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
 
 .PHONY: ramfs
 ramfs:
-	make -C $(APPS_DIR)
+	$(MAKE) -C $(APPS_DIR)
 	mkdir -p $(RAMFS_DIR)/Applications/
 	mv $(APPS_DIR)/bin/** $(RAMFS_DIR)/Applications/
 	cd $(RAMFS_DIR); tar -cvf ../ramfs.img *
@@ -90,6 +90,7 @@ clean:
 	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd ramfs.img
 	$(MAKE) -C kernel clean
 	$(MAKE) -C $(APPS_DIR) clean
+	$(MAKE) -C libc clean
 
 .PHONY: distclean
 distclean: clean

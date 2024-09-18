@@ -2,24 +2,30 @@
 // It is released under the MIT license -- see LICENSE
 // Written by: Kevin Alavik.
 
-
 #include <core/proc/elf.h>
 #include <lib/posix/stdio.h>
-#include <dev/vfs.h>
 
-void ElfSpawn(const char* path) {
-	char* buffer = VmmAlloc(VmmGetKernelPageMap(), 1, 1 | 2);
-    if(buffer == NULL) {
-		mprintf("Failed to allocate memory for ELF buffer!\n");
+void SpawnElf(u8 *data, PageMap *pm)
+{
+	ElfHeader_t *header = (ElfHeader_t *)data;
+	if (header->e_magic != ELF_MAGIC) {
+		printf("ERROR: Invalid ELF magic number!\n");
 		return;
-    }
-
-	u64 bytesRead = VfsRead(path, &buffer);
-	if (bytesRead <= 0) {
-		mprintf("Failed to read ELF: \"%s\"!\n", path);
-        return;
 	}
 
-	// TODO: Parse elf and spawn a new task.
-    mprintf("%s\n", buffer);
+	ElfProgramHeader_t *progHeaders =
+		(ElfProgramHeader_t *)(data + header->e_phoff);
+	for (u16 i = 0; i < header->e_phnum; i++) {
+		ElfProgramHeader_t *ph = &progHeaders[i];
+		if (ph->p_type == PT_LOAD) {
+			u64 start = ph->p_vaddr;
+			u64 end = start + ph->p_memsz;
+			u64 offset = ph->p_offset;
+
+			for (u64 addr = start; addr < end; addr += 0x1000) {
+				u64 pageOffset = addr - start + offset;
+				VmmMap(pm, (u64)addr, (u64)(data + pageOffset), 1 | 2);
+			}
+		}
+	}
 }

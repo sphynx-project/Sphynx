@@ -60,6 +60,8 @@ override KCFLAGS += \
     -mno-red-zone \
     -Iinclude/ \
     -Iexternal/ \
+    -Wno-unused-function \
+    -Wno-unused-parameter
 
 # Internal C preprocessor flags that should not be changed by the user.
 override KCPPFLAGS := \

@@ -16,9 +16,12 @@ typedef struct {
 	Context_t ctx;
 	bool hasExited;
 	TaskFunction_t taskFunction;
+	int exitCode;
 } __attribute((packed)) Task_t;
 
 void SchedulerInitialize();
 void SchedulerTick(Context_t *ctx);
 void SchedulerSpawn(TaskFunction_t function);
 Task_t *SchedulerGetCurrentTask();
+void SchedulerSpawnElf(const char *path);
+void TaskExit(Task_t *task, u64 exitCode);

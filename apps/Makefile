@@ -1,4 +1,4 @@
-APPS := test
+APPS := init
 
 .PHONY: all build $(APPS) clean
 
@@ -7,7 +7,7 @@ all: build
 build: $(APPS)
 
 $(APPS):
-	$(MAKE) -C $@ all
+	$(MAKE) -C $@
 	mkdir -p bin
 	mv $@/bin/* bin/
 

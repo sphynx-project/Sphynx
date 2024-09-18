@@ -3,8 +3,10 @@
 // Written by: Kevin Alavik.
 
 #include <core/interrupts/idt.h>
-#include <core/interrupts/pic.h>
+
 #include <core/interrupts/timers/pit.h>
+#include <core/interrupts/syscall.h>
+#include <core/interrupts/pic.h>
 #include <lib/posix/stdio.h>
 #include <sys/cpu.h>
 #include <sphynx.h>
@@ -78,6 +80,9 @@ void IdtInitialize()
 		IdtSetGate(idtEntries, i, isrTable[i], 0x08, 0x8E);
 	}
 
+	IdtSetGate(idtEntries, SYSCALL_VECTOR, (u64)isrTable[SYSCALL_VECTOR], 0x08,
+			   0xEE);
+
 	LegacyPicDisable();
 	IdtLoad((u64)&idtPointer);
 	LegacyPicEnable();
@@ -95,7 +100,7 @@ void IdtExcpHandler(Context_t frame)
 
 		mprintf("\033[1mPanic at address: \033[0m0x%.16llx\n", frame.rip);
 		mprintf("\033[1mException type:   \033[0m%d (%s)\n", frame.vector,
-			   exceptionStrings[frame.vector]);
+				exceptionStrings[frame.vector]);
 		mprintf("\033[1mError code:       \033[0m0x%.16llx\n\n", frame.err);
 
 		if (frame.vector == 14) {
@@ -107,15 +112,15 @@ void IdtExcpHandler(Context_t frame)
 
 			mprintf("\033[1mPage Fault Error Code Details:\033[0m\n");
 			mprintf("  \033[1mP:    \033[0m%s\n",
-				   p ? "Protection violation" : "Non-present page");
+					p ? "Protection violation" : "Non-present page");
 			mprintf("  \033[1mWR:   \033[0m%s\n", wr ? "Write" : "Read");
 			mprintf("  \033[1mUS:   \033[0m%s\n",
-				   us ? "User mode" : "Supervisor mode");
+					us ? "User mode" : "Supervisor mode");
 			mprintf("  \033[1mRSVD: \033[0m%s\n",
-				   rsvd ? "Reserved bit violation" :
-						  "No reserved bit violation");
+					rsvd ? "Reserved bit violation" :
+						   "No reserved bit violation");
 			mprintf("  \033[1mID:   \033[0m%s\n",
-				   id ? "Instruction fetch" : "No instruction fetch");
+					id ? "Instruction fetch" : "No instruction fetch");
 			mprintf("\n");
 		}
 
@@ -150,6 +155,9 @@ void IdtExcpHandler(Context_t frame)
 
 		LegacyPicSendEndOfInterrupt(irq);
 	} else if (frame.vector == 0x80) {
+		u64 result = SyscallHandle(frame.rax, frame.rdi, frame.rsi, frame.rdx,
+								   frame.rcx, frame.r8);
+		frame.rax = result;
 	}
 }
 

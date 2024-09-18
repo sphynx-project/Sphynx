@@ -1,12 +1,13 @@
 /kernel/external/flanterm/
 /kernel/external/limine.h
+/ramfs/Applications/
 /kernel/bin/
 /kernel/obj/
+/libc/lib/
 /apps/bin
 /.vscode/
 /limine/
 /ovmf/
-/ramfs/Applications
 *.img
 *.iso
 *.o

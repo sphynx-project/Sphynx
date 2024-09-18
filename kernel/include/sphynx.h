@@ -20,6 +20,6 @@
 #define VoidRedirect(...) ((void)0)
 
 #define KernelLog(fmt, ...)                                             \
-	mprintf("\033[1m%s (%s:%d)\033[0m: ", __func__, __FILE__, __LINE__); \
-	mprintf(fmt, ##__VA_ARGS__);                                         \
-	mprintf("\n");
+	printf("\033[1m%s (%s:%d)\033[0m: ", __func__, __FILE__, __LINE__); \
+	printf(fmt, ##__VA_ARGS__);                                         \
+	printf("\n");

@@ -59,3 +59,17 @@ void vdprintf(const char *fmt, va_list args)
 		LockRelease(&vdprintf_lock);
 	}
 }
+
+void putchar(char ch, int i)
+{
+	switch (i) {
+	case 1:
+		_putc(ch);
+		break;
+	case 2:
+		_dputc(ch);
+		break;
+	default:
+		break;
+	}
+}

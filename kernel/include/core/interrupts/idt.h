@@ -56,9 +56,13 @@ typedef struct {
 	u64 ss;
 } __attribute__((packed)) Context_t;
 
+extern idtEntry_t idtEntries[IDT_ENTRY_COUNT];
+
 typedef void (*irqHandler_t)(Context_t *);
 void IdtInitialize();
 void IdtLoad(u64);
+
+void IdtSetGate(idtEntry_t idt[], int num, u64 base, u16 sel, u8 flags);
 
 void IdtIrqRegister(int irq, irqHandler_t handler);
 void IdtIrqDeregister(int irq);
