@@ -59,4 +59,4 @@ typedef struct {
 #define PF_W 0x2 // Write
 #define PF_R 0x4 // Read
 
-void SpawnElf(u8 *data, PageMap *pm);
+u64 SpawnElf(u8 *data, PageMap *pm);

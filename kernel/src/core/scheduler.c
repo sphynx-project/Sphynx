@@ -44,6 +44,7 @@ void WatchdogMain()
 	Task_t *task = currentTask;
 	dprintf("Launching task %d at 0x%.16llx\n", task->id,
 			(u64)task->taskFunction);
+	VmmSwitchPageMap(task->pm);
 	task->taskFunction();
 	while (1) {
 	}
@@ -161,9 +162,7 @@ void SchedulerSpawnElf(const char *path)
 	task->ctx.ss = 0x10;
 	task->ctx.rflags = 0x202;
 
-	SpawnElf(elfData, task->pm);
-
-	task->taskFunction = (TaskFunction_t)((ElfHeader_t *)elfData)->e_entry;
+	task->taskFunction = (TaskFunction_t)SpawnElf(elfData, task->pm);
 
 	taskList[taskCount++] = task;
 

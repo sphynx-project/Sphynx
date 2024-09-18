@@ -7,17 +7,17 @@
 #include <lib/posix/string.h>
 #include <mm/vmm.h>
 
-void SpawnElf(u8 *data, PageMap *pm)
+u64 SpawnElf(u8 *data, PageMap *pm)
 {
 	if (data == NULL) {
 		mprintf("ERROR: Invalid ELF buffer passed, null!\n");
-		return;
+		return 0;
 	}
 
 	ElfHeader_t *header = (ElfHeader_t *)data;
 	if (header->e_magic != ELF_MAGIC) {
 		mprintf("ERROR: Invalid ELF magic number!\n");
-		return;
+		return 0;
 	}
 
 	ElfProgramHeader_t *progHeaders =
@@ -53,4 +53,6 @@ void SpawnElf(u8 *data, PageMap *pm)
 			}
 		}
 	}
+
+	return header->e_entry;
 }
