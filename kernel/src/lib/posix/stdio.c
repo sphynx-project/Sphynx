@@ -21,3 +21,12 @@ void dprintf(const char *fmt, ...)
 	vdprintf(fmt, args);
 	va_end(args);
 }
+
+void mprintf(const char* fmt,...) {
+
+	va_list args;
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	vdprintf(fmt, args);
+	va_end(args);
+}

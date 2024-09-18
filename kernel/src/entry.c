@@ -24,6 +24,7 @@
 
 // Task includes
 #include <core/scheduler.h>
+#include <core/proc/elf.h>
 
 // File system includes
 #include <dev/vfs.h>
@@ -72,8 +73,11 @@ struct limine_module_response *moduleResponse;
 struct limine_kernel_address_response *kernelAddressResponse;
 u64 hhdmOffset;
 
-extern void Init(void);
-extern void Idle(void);
+void Idle(void)
+{
+	while (1) {
+	}
+}
 
 void KernelEntry(void)
 {
@@ -155,25 +159,15 @@ void KernelEntry(void)
 
 	moduleResponse = moduleRequest.response;
 
-	// TODO: VFS
 	VfsInitialize();
 	RamfsInit((u8 *)moduleResponse->modules[0]->address,
 			  moduleResponse->modules[0]->size);
 
+
 	SchedulerInitialize();
 	PitInitialize();
 
-	// TODO: Handle init ELF and launch it.
-	const char *initProcPath = "A:\\Applications\\test";
-	char buffer[1028] = { 0 };
-	u64 bytesRead = VfsRead(initProcPath, &buffer);
-	if (bytesRead > 0) {
-		dprintf("%s\n", buffer);
-	} else {
-		dprintf("Failed to read \"%s\"!\n", initProcPath);
-	}
-
-	//SchedulerSpawn(Init);
+	ElfSpawn("A:\\Aplications\\test");
 	SchedulerSpawn(Idle);
 
 	// Kickstart IRQ 0 incase it doesnt do it manually, this might fail

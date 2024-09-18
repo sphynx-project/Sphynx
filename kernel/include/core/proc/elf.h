@@ -4,6 +4,7 @@
 
 #pragma once
 
-void printf(const char *fmt, ...);
-void dprintf(const char *fmt, ...);
-void mprintf(const char *fmt, ...);
+#include <lib/std/types.h>
+#include <core/scheduler.h>
+
+void ElfSpawn(const char* path);
