@@ -109,9 +109,32 @@ void VmmSwitchPageMap(PageMap *pageMap)
 PageMap *VmmNewPageMap()
 {
 	PageMap *pageMap = (PageMap *)PHYS_TO_VIRT(PmmRequestPages(1));
+	if (!pageMap) {
+		mprintf("Failed to allocate page for new page map\n");
+		return NULL;
+	}
 	memset(pageMap, 0, GetPageSize());
+
 	pageMap->topLevel = (u64 *)PHYS_TO_VIRT(PmmRequestPages(1));
+	if (!pageMap->topLevel) {
+		mprintf("Failed to allocate top-level page\n");
+		PmmFreePages((u64 *)VIRT_TO_PHYS(pageMap), 1);
+		return NULL;
+	}
 	memset(pageMap->topLevel, 0, GetPageSize());
+
+	pageMap->vmaHead = (VmaRegion *)PHYS_TO_VIRT(PmmRequestPages(1));
+	if (!pageMap->vmaHead) {
+		mprintf("Failed to allocate VMA head\n");
+		PmmFreePages((u64 *)VIRT_TO_PHYS(pageMap->topLevel), 1);
+		PmmFreePages((u64 *)VIRT_TO_PHYS(pageMap), 1);
+		return NULL;
+	}
+	memset(pageMap->vmaHead, 0, GetPageSize());
+
+	pageMap->vmaHead->next = pageMap->vmaHead;
+	pageMap->vmaHead->prev = pageMap->vmaHead;
+
 	for (int i = 256; i < 512; i++) {
 		pageMap->topLevel[i] = vmmKernelPageMap->topLevel[i];
 	}

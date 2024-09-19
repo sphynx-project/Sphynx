@@ -8,6 +8,7 @@
 
 int main()
 {
-	printf("Hello, World!\n");
-	return 0;
+	printf("SphynxOS booted yippie!\n");
+	printf("now we die >:D\n");
+	return 69;
 }
