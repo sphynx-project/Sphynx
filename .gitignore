@@ -3,8 +3,9 @@
 /ramfs/Applications/
 /kernel/bin/
 /kernel/obj/
+/apps/build/
 /libc/lib/
-/apps/bin
+/apps/bin/
 /.vscode/
 /limine/
 /ovmf/

@@ -81,13 +81,6 @@ void Idle(void)
 	}
 }
 
-void Test(void)
-{
-	Task_t *self = SchedulerGetCurrentTask();
-	printf("Hello from task %d\n", self->id);
-	TaskExit(self, 0);
-}
-
 void KernelEntry(void)
 {
 	if (LIMINE_BASE_REVISION_SUPPORTED == false) {
@@ -173,8 +166,11 @@ void KernelEntry(void)
 			  moduleResponse->modules[0]->size);
 
 	SchedulerInitialize();
+
+	// ONLY SPAWN ONE ELF BECUZ IM AN IDIOT THAT BREAKS SHIT
 	SchedulerSpawnElf("A:\\Applications\\init");
-	SchedulerSpawnElf("A:\\Applications\\test");
+	// SchedulerSpawnElf("A:\\Applications\\test");
+
 	SchedulerSpawn(Idle);
 
 	PitInitialize();
