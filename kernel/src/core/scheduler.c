@@ -147,6 +147,25 @@ void SchedulerSpawnElf(const char *path)
 
 		task->id = taskId++;
 		task->pm = VmmNewPageMap();
+		if (task->pm == NULL) {
+			printf("ERROR: Failed to create seperate pagemap for task %d!\n",
+				   task->id);
+			VmmFree(VmmGetKernelPageMap(), bin);
+			PmmFreePages((void *)VIRT_TO_PHYS((u64)task), 1);
+			return;
+		}
+
+		for (int i = 0; i < taskCount; i++) {
+			if (taskList[i]->pm == task->pm) {
+				printf("ERROR: Task %d's pagemap collides with tasks %d\n",
+					   task->id, i);
+
+				VmmFree(VmmGetKernelPageMap(), bin);
+				PmmFreePages((void *)VIRT_TO_PHYS((u64)task), 1);
+				return;
+			}
+		}
+
 		task->ctx.rip = (u64)WatchdogMain;
 		task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
 		task->ctx.cs = 0x08;

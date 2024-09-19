@@ -167,9 +167,8 @@ void KernelEntry(void)
 
 	SchedulerInitialize();
 
-	// ONLY SPAWN ONE ELF BECUZ IM AN IDIOT THAT BREAKS SHIT
 	SchedulerSpawnElf("A:\\Applications\\init");
-	// SchedulerSpawnElf("A:\\Applications\\test");
+	SchedulerSpawnElf("A:\\Applications\\test");
 
 	SchedulerSpawn(Idle);
 
