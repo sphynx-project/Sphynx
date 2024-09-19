@@ -42,15 +42,10 @@ u64 SpawnElf(u8 *data, PageMap *pm)
 			flags &= ~VMM_WRITE;
 		}
 
-		for (u64 addr = start; addr < fileEnd; addr += 0x1000) {
+		for (u64 addr = start; addr < end; addr += 0x1000) {
 			u64 pageOffset = addr - start + offset;
-			VmmMap(pm, addr, (u64)(data + pageOffset), flags);
-		}
-
-		if (fileEnd < end) {
-			for (u64 addr = fileEnd; addr < end; addr += 0x1000) {
-				VmmMap(pm, addr, 0, flags);
-			}
+			u8 *src = (addr < fileEnd) ? (data + pageOffset) : NULL;
+			VmmMap(pm, addr, (u64)src, flags);
 		}
 	}
 

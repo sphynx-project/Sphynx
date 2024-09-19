@@ -10,12 +10,17 @@
 
 typedef void (*TaskFunction_t)(void);
 
+typedef enum {
+	STATUS_WAITING = 0,
+	STATUS_RUNNING = 1,
+	STATUS_TERMINATED = 2
+} TaskStatus_t;
+
 typedef struct {
 	u64 id;
 	PageMap *pm;
 	Context_t ctx;
-	bool hasExited;
-	TaskFunction_t taskFunction;
+	TaskStatus_t status;
 	u64 exitCode;
 } __attribute((packed)) Task_t;
 

@@ -24,8 +24,9 @@ void RemoveTask(u32 index)
 		return;
 	}
 
-	VmmFree(taskList[index]->pm, (void *)taskList[index]->ctx.rsp);
-	VmmFree(taskList[index]->pm, (void *)taskList[index]);
+	Task_t *task = taskList[index];
+	VmmFree(task->pm, (void *)task->ctx.rsp);
+	VmmFree(task->pm, (void *)task);
 
 	for (u32 i = index; i < taskCount - 1; ++i) {
 		taskList[i] = taskList[i + 1];
@@ -35,47 +36,20 @@ void RemoveTask(u32 index)
 
 void TaskExit(Task_t *task, u64 exitCode)
 {
-	task->hasExited = true;
+	task->status = STATUS_TERMINATED;
 	task->exitCode = exitCode;
+	SchedulerTick(NULL);
 }
 
-void WatchdogMain()
+Task_t *SchedulerGetCurrentTask()
 {
-	Task_t *task = currentTask;
-	dprintf("Launching task %d at 0x%.16llx\n", task->id,
-			(u64)task->taskFunction);
-	VmmSwitchPageMap(task->pm);
-	task->taskFunction();
-	while (1) {
-	}
-}
-
-void WatchdogHandler()
-{
-	while (1) {
-		if (taskCount == 1 && taskList[0] == currentTask) {
-			TaskExit(currentTask, 0);
-			return;
-		}
-
-		for (u32 i = 0; i < taskCount; i++) {
-			Task_t *task = taskList[i];
-			if (task->hasExited) {
-				mprintf("Task %llu exited with code %llu\n", task->id,
-						task->exitCode);
-				RemoveTask(i);
-				i--;
-			}
-		}
-		asm volatile("pause");
-	}
+	return currentTask;
 }
 
 void SchedulerInitialize()
 {
 	taskCount = 0;
 	currentTaskIndex = 0;
-	SchedulerSpawn(WatchdogHandler);
 }
 
 void SchedulerSpawn(TaskFunction_t function)
@@ -87,12 +61,12 @@ void SchedulerSpawn(TaskFunction_t function)
 	Task_t *task = (Task_t *)PHYS_TO_VIRT(PmmRequestPages(1));
 	task->id = taskId++;
 	task->pm = VmmNewPageMap();
-	task->ctx.rip = (u64)WatchdogMain;
+	task->ctx.rip = (u64)function;
 	task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
 	task->ctx.cs = 0x08;
 	task->ctx.ss = 0x10;
 	task->ctx.rflags = 0x202;
-	task->taskFunction = function;
+	task->status = STATUS_WAITING;
 
 	taskList[taskCount++] = task;
 }
@@ -103,6 +77,24 @@ void SchedulerTick(Context_t *ctx)
 		return;
 	}
 
+	for (u32 i = 0; i < taskCount; ++i) {
+		Task_t *task = taskList[i];
+		if (task->status == STATUS_TERMINATED) {
+			printf("Task %llu terminated with code %llu\n", task->id,
+				   task->exitCode);
+			RemoveTask(i);
+			i--;
+		}
+	}
+
+	if (taskCount == 0) {
+		return;
+	}
+
+	if (ctx == NULL) {
+		return;
+	}
+
 	Task_t *task = taskList[currentTaskIndex];
 	if (task == NULL) {
 		return;
@@ -110,19 +102,16 @@ void SchedulerTick(Context_t *ctx)
 
 	if (currentTask != NULL) {
 		memcpy(&currentTask->ctx, ctx, sizeof(Context_t));
+		currentTask->status = STATUS_WAITING;
 	}
 
 	currentTask = task;
+	currentTask->status = STATUS_RUNNING;
 
 	memcpy(ctx, &currentTask->ctx, sizeof(Context_t));
 	VmmSwitchPageMap(currentTask->pm);
 
 	currentTaskIndex = (currentTaskIndex + 1) % taskCount;
-}
-
-Task_t *SchedulerGetCurrentTask()
-{
-	return currentTask;
 }
 
 void SchedulerSpawnElf(const char *path)
@@ -155,16 +144,28 @@ void SchedulerSpawnElf(const char *path)
 
 	task->id = taskId++;
 	task->pm = VmmNewPageMap();
+	if (task->pm == NULL) {
+		mprintf("ERROR: Failed to create a new page map for task!\n");
+		VmmFree(VmmGetKernelPageMap(), elfData);
+		VmmFree(VmmGetKernelPageMap(), (void *)task);
+		return;
+	}
 
-	task->ctx.rip = (u64)WatchdogMain;
+	task->ctx.rip = (u64)SpawnElf(elfData, task->pm);
+	if (task->ctx.rip == 0) {
+		mprintf("ERROR: Failed to load ELF!\n");
+		VmmFree(VmmGetKernelPageMap(), elfData);
+		VmmFree(task->pm, NULL);
+		VmmFree(VmmGetKernelPageMap(), (void *)task);
+		return;
+	}
+
 	task->ctx.rsp = (u64)PHYS_TO_VIRT(PmmRequestPages(1)) + 4095;
 	task->ctx.cs = 0x08;
 	task->ctx.ss = 0x10;
 	task->ctx.rflags = 0x202;
-
-	task->taskFunction = (TaskFunction_t)SpawnElf(elfData, task->pm);
+	task->status = STATUS_WAITING;
 
 	taskList[taskCount++] = task;
-
 	VmmFree(VmmGetKernelPageMap(), elfData);
 }
