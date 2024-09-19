@@ -130,7 +130,8 @@ void SchedulerSpawnElf(const char *path)
 		return;
 	}
 
-	u8 *bin = (u8 *)VmmAlloc(VmmGetKernelPageMap(), 1, 1 | 2);
+	u8 *bin = (u8 *)VmmAlloc(VmmGetKernelPageMap(), 4,
+							 1 | 2); // ~16KB should be enough for now
 	if (bin == NULL) {
 		printf("ERROR: Failed to allocate memory for ELF data!\n");
 		return;
@@ -155,7 +156,7 @@ void SchedulerSpawnElf(const char *path)
 			return;
 		}
 
-		for (int i = 0; i < taskCount; i++) {
+		for (u32 i = 0; i < taskCount; i++) {
 			if (taskList[i]->pm == task->pm) {
 				printf("ERROR: Task %d's pagemap collides with tasks %d\n",
 					   task->id, i);
@@ -172,8 +173,8 @@ void SchedulerSpawnElf(const char *path)
 		task->ctx.ss = 0x10;
 		task->ctx.rflags = 0x202;
 
-		SpawnElf(bin, task->pm);
-		task->taskFunction = (TaskFunction_t)((ElfHeader_t *)bin)->e_entry;
+		task->taskFunction = (TaskFunction_t)SpawnElf(bin, task->pm);
+
 		taskList[taskCount++] = task;
 	} else {
 		printf("ERROR: Failed to read ELF at %s\n", path);

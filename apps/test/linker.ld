@@ -3,6 +3,7 @@ ENTRY(_start)
 
 SECTIONS
 {
+    . = 0x2000;
     .text : ALIGN(4K)
     {
         *(.text)
@@ -26,11 +27,6 @@ SECTIONS
         *(COMMON)
         *(.bss)
         *(.bss.*)
-    }
-
-    .stack (NOLOAD) : ALIGN(4K)
-    {
-        . = . + 16K;
     }
 
     _end = .;
